@@ -1,10 +1,5 @@
 
 
-from flask import Flask, request, make_response
-import json
-from handler_core import Handler_WebHook
-
-
 
 ''' 
 for daemon setup script
@@ -40,6 +35,16 @@ ______________________________
 '''
 
 
+from flask import Flask, request, make_response
+import json
+
+
+
+from handler_core import Handler_WebHook
+from my_pass import zbx_web_host
+
+
+
 app = Flask(__name__)
 @app.route('/netbox_webhook', methods=['POST'])
 
@@ -62,5 +67,5 @@ def webhook():
 
 
 if __name__ == '__main__':
-    app.run(host='10.50.50.178', port=3501)
+    app.run(host=zbx_web_host, port=3501)
 
