@@ -8,7 +8,7 @@
 from pyzabbix import ZabbixAPI, ZabbixAPIException
 
 
-from my_pass import zbx_login,zbx_password,zbx_api_url
+from ..web_handler.my_pass import zbx_login,zbx_password,zbx_api_url
 
 
 class GetHost():
