@@ -6,7 +6,7 @@ sys.path.append(my_path_sys)
 
 
 from remote_system.executor_with_hosts.classifier_for_device import CLASSIFIER
-from zabbix_get import GetProxy ,GetGroup ,GetTemplate
+from remote_system.core.zabbix_get import GetProxy,GetGroup,GetTemplate
 
 null = None
 

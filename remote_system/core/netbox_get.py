@@ -1,6 +1,6 @@
 
 
-from keep_api_connect import netbox_api_instance
+from remote_system.core.keep_api_connect import netbox_api_instance
 
 
 

@@ -11,8 +11,8 @@ from remote_system.executor_with_hosts.delete_host import Remover_Hosts
 from remote_system.executor_with_hosts.update_host import Updater_Hosts
 
 
-from parser_and_preparing import Parser_Json
-#from tg_bot import telega_bot
+from remote_system.core.parser_and_preparing import Parser_Json
+#from remote_system.core.tg_bot import telega_bot
 
 
 
