@@ -3,12 +3,8 @@
 
 
 
-
-
-from pyzabbix import ZabbixAPI, ZabbixAPIException
-
-
-from ..web_handler.my_pass import zbx_login,zbx_password,zbx_api_url
+from keep_api_connect import zabbix_api_instance
+from mappings import GetMappings
 
 
 class GetHost():
@@ -17,21 +13,18 @@ class GetHost():
     """
 
     def __init__(self):
-        self.zapi = ZabbixAPI(zbx_api_url)
-        self.login = zbx_login
-        self.password = zbx_password
+            self.zapi = zabbix_api_instance.get_instance()
 
 
     def get_host(self):
        try:
-            self.zapi.login(self.login, self.password)
             hosts = self.zapi.host.get()
-            for host in hosts:
-                print(host)
 
+            #for host in hosts:
+             #   print(host)
        except Exception as e:
            print(f'Error: {e}')
-           return [False, e]
+           return e
 
 
 
@@ -41,18 +34,14 @@ class GetProxy():
         """
 
         def __init__(self):
-            self.zapi = ZabbixAPI(zbx_api_url)
-            self.login = zbx_login
-            self.password = zbx_password
+            self.zapi = zabbix_api_instance.get_instance()
 
         def get_proxy_next_choise(self):
 
            #function return the proxy_id which has a smallest count of discovery hosts
 
            try:
-                self.zapi.login(self.login, self.password)
                 proxies = self.zapi.proxy.get(output=["proxyid", "host"])
-
                 list_proxys = []
                 for proxy in proxies:
                     proxy_id = proxy["proxyid"]
@@ -64,7 +53,7 @@ class GetProxy():
                 return selected_proxy
            except Exception as e:
                print(f'Error: {e}')
-               return [False, e]
+               return e
 
 
 class GetGroup():
@@ -73,30 +62,28 @@ class GetGroup():
         """
 
         def __init__(self,group_name):
-            self.zapi = ZabbixAPI(zbx_api_url)
-            self.login = zbx_login
-            self.password = zbx_password
+            self.zapi = zabbix_api_instance.get_instance()
             self.group_name = group_name
 
         def get_group(self,*args):
             try:
-                self.zapi.login(self.login, self.password)
                 group_id = self.zapi.hostgroup.get(filter={'name': self.group_name})[0]['groupid']
-                return [True, group_id]
+                return group_id
+            except IndexError as err:
+                    group_id = self.create_and_get_group(self.group_name)
+                    return group_id
             except Exception as e:
                 print(f'Error: {e}')
-                return [False, e]
+                return e
 
         def create_and_get_group(self,*args):
             try:
-
-                self.zapi.login(self.login, self.password)
                 self.zapi.hostgroup.create(name=self.group_name)
                 group_id = self.zapi.hostgroup.get(filter={'name': self.group_name})[0]['groupid']
-                return [True, group_id]
+                return group_id
             except Exception as e:
                 print(f'Error: {e}')
-                return [False, e]
+                return e
 
 
 class GetTemplate():
@@ -105,33 +92,26 @@ class GetTemplate():
     """
 
     def __init__(self, group_name):
-        self.zapi = ZabbixAPI(zbx_api_url)
-        self.login = zbx_login
-        self.password = zbx_password
+        self.zapi = zabbix_api_instance.get_instance()
         self.group_name = group_name
-        self.template_name = ''
 
-    def classifier_template(self,*args):
-        print(self.group_name)
-        if self.group_name == 'Huawei Technologies Co./Huawei.VRP/NE20E-S2F':
-            self.template_name = 'Huawei VRP by SNMP'
-            template_id = self.get_template(self.template_name)
-            return template_id
+    def classifier_template(self, *args):
+        Mapp = GetMappings()
+        for group, template_name in Mapp.group_template_mapping.items():
+            if group in self.group_name:
+                template_id = self.get_template(**{"template_name": template_name})
+                return template_id
 
 
-    def get_template(self, *args):
+    def get_template(self, **kwargs):
         try:
-                self.zapi.login(self.login, self.password)
-                template = self.zapi.template.get(filter = {'name':self.template_name})[0]['templateid']
-                return [True, template]
+                template_id = self.zapi.template.get(filter = {'name':kwargs["template_name"]})[0]['templateid']
+                return template_id
         except Exception as e:
                 print(f'Error: {e}')
-                return [False, e]
+                return e
 
-#grouping = GetGroup("Huawei Technologies Co./Huawei.VRP/NE20E-S2F")
-#result = grouping.get_group()
-#print(result)
 
-#classifier = GetTemplate('Huawei Technologies Co./Huawei.VRP/NE20E-S2F')
-#result = classifier.classifier_template()
-#print(result[1])
+
+
+

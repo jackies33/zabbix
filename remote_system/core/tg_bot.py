@@ -9,7 +9,7 @@ class telega_bot():
     Class for telegram bot , send messages
     """
 
-    from ..executor_with_hosts.my_pass import tg_token, chat_id
+    from my_env import tg_token, chat_id
     def __init__(self, message=None):
         self.message = message
 
