@@ -1,17 +1,20 @@
 
 
 
+import sys
 
-from ..core.mappings import GetMappings
-from ..core.parser_and_preparing import BaseDeviceDataGet
-from ..core.keep_api_connect import zabbix_api_instance
+sys.path.append('/opt/zabbix1')
+
+from remote_system.core.mappings import GetMappings
+from remote_system.core.parser_and_preparing import BaseDeviceDataGet
+from remote_system.core.keep_api_connect import zabbix_api_instance
 
 
 
 
 class Updater_Hosts(BaseDeviceDataGet):
     """
-    Legacy class for handling information and update the host in zabbix
+    Legacy class for handling information and update the host in zabbix1
     """
 
     def __init__(self, **kwargs):
@@ -23,7 +26,7 @@ class Updater_Hosts(BaseDeviceDataGet):
 
     def update_host(self):
         """
-        Method for update device(host) in zabbix
+        Method for update device(host) in zabbix1
         """
         try:
             data = self.get_device_data()

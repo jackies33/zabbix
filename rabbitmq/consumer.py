@@ -13,7 +13,7 @@ _______________________________
 Description=Listen and classifier web hooks from netbox App through RabbitMQ
 
 [Service]
-ExecStart=/usr/bin/python3 /opt/zabbix_custom/rabbitmq/consumer.py
+ExecStart=/usr/bin/python3 /opt/zabbix1/rabbitmq/consumer.py
 StandardOutput=file:/var/log/rs_zbx/output.log
 StandardError=file:/var/log/rs_zbx/error.log
 Restart=always
@@ -41,10 +41,14 @@ ______________________________
 import pika
 import time
 import json
+import sys
+
+from my_env import rabbitmq_host,rabbitmq_queue,MAX_MESSAGES_Rabbit,my_path_sys
+sys.path.append(my_path_sys)
+
+from remote_system.core.handler_core import Handler_WebHook
 
 
-from my_env import rabbitmq_host,rabbitmq_queue,MAX_MESSAGES_Rabbit
-from ..remote_system.core.handler_core import Handler_WebHook
 
 def callback(ch, method, properties, body):
     data_for_sent = json.loads(body.decode())

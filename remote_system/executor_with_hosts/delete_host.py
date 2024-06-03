@@ -1,16 +1,18 @@
 
 
+import sys
 
+sys.path.append('/opt/zabbix1')
 
-from ..core.parser_and_preparing import BaseDeviceDataGet
-from ..core.keep_api_connect import zabbix_api_instance
+from remote_system.core.parser_and_preparing import BaseDeviceDataGet
+from remote_system.core.keep_api_connect import zabbix_api_instance
 
 
 
 
 class Remover_Hosts(BaseDeviceDataGet):
     """
-    Legacy class for handling information and delete the host in zabbix
+    Legacy class for handling information and delete the host in zabbix1
     """
 
     def __init__(self, data):
@@ -19,7 +21,7 @@ class Remover_Hosts(BaseDeviceDataGet):
 
     def remove_host(self):
         """
-        Method for delete device(host) in zabbix
+        Method for delete device(host) in zabbix1
         """
         try:
             data = self.get_only_name()

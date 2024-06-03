@@ -1,5 +1,11 @@
 
-from ..executor_with_hosts.classifier_for_device import CLASSIFIER
+from my_env import my_path_sys
+import sys
+
+sys.path.append(my_path_sys)
+
+
+from remote_system.executor_with_hosts.classifier_for_device import CLASSIFIER
 from zabbix_get import GetProxy ,GetGroup ,GetTemplate
 
 null = None

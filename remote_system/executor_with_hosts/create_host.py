@@ -4,16 +4,21 @@ from pyzabbix import ZabbixAPIException
 
 
 
-from ..core.keep_api_connect import zabbix_api_instance
-from ..core.parser_and_preparing import BaseDeviceDataGet
-from ..core.netbox_get import NetboxGet
+
+import sys
+
+sys.path.append('/opt/zabbix1')
+
+from remote_system.core.keep_api_connect import zabbix_api_instance
+from remote_system.core.parser_and_preparing import BaseDeviceDataGet
+from remote_system.core.netbox_get import NetboxGet
 
 
 
 
 class Creator_Hosts(BaseDeviceDataGet):
     """
-    Legacy class for handling information and create the host in zabbix
+    Legacy class for handling information and create the host in zabbix1
     """
 
     def __init__(self, data):
@@ -22,7 +27,7 @@ class Creator_Hosts(BaseDeviceDataGet):
 
     def create_host(self):
         """
-        Method for create device(host) in zabbix
+        Method for create device(host) in zabbix1
         """
         data = self.get_device_data()
         netboxget = NetboxGet()

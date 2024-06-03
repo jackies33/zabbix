@@ -9,7 +9,7 @@ from mappings import GetMappings
 
 class GetHost():
     """
-    class for getting different information about hosts from zabbix api
+    class for getting different information about hosts from zabbix1 api
     """
 
     def __init__(self):
@@ -30,7 +30,7 @@ class GetHost():
 
 class GetProxy():
         """
-        class for getting different information about proxy server from zabbix api
+        class for getting different information about proxy server from zabbix1 api
         """
 
         def __init__(self):
@@ -58,7 +58,7 @@ class GetProxy():
 
 class GetGroup():
         """
-        class for getting different information about groups from zabbix api
+        class for getting different information about groups from zabbix1 api
         """
 
         def __init__(self,group_name):
@@ -88,7 +88,7 @@ class GetGroup():
 
 class GetTemplate():
     """
-    class for getting different information about templates server from zabbix api
+    class for getting different information about templates server from zabbix1 api
     """
 
     def __init__(self, group_name):
