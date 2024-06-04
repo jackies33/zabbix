@@ -6,12 +6,12 @@ import sys
 sys.path.append(my_path_sys)
 
 
-from zabbix_custom.remote_system.executor_with_hosts.create_host import Creator_Hosts
-from zabbix_custom.remote_system.executor_with_hosts.delete_host import Remover_Hosts
-from zabbix_custom.remote_system.executor_with_hosts.update_host import Updater_Hosts
+from remote_system.executor_with_hosts.create_host import Creator_Hosts
+from remote_system.executor_with_hosts.delete_host import Remover_Hosts
+from remote_system.executor_with_hosts.update_host import Updater_Hosts
 
 
-from zabbix_custom.remote_system.core.parser_and_preparing import Parser_Json
+from remote_system.core.parser_and_preparing import Parser_Json
 #from remote_system.core.tg_bot import telega_bot
 
 

@@ -6,8 +6,8 @@ import atexit
 
 
 
-from zabbix_custom.remote_system.core.my_env import zbx_api_url, zbx_api_token
-from zabbix_custom.remote_system.core.my_env import netbox_url,netbox_api_token
+from remote_system.core.my_env import zbx_api_url, zbx_api_token
+from remote_system.core.my_env import netbox_url,netbox_api_token
 
 
 

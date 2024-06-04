@@ -7,9 +7,9 @@ import sys
 sys.path.append(my_path_sys)
 
 
-from zabbix_custom.remote_system.executor_with_hosts.classifier_for_device import CLASSIFIER
-from zabbix_custom.remote_system.core.zabbix_get import GetProxy,GetGroup,GetTemplate
-from zabbix_custom.remote_system.core.netbox_get import NetboxGet
+from remote_system.executor_with_hosts.classifier_for_device import CLASSIFIER
+from remote_system.core.zabbix_get import GetProxy,GetGroup,GetTemplate
+from remote_system.core.netbox_get import NetboxGet
 
 null = None
 

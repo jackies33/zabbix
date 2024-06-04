@@ -1,8 +1,8 @@
 
 
 
-from zabbix_custom.remote_system.core.keep_api_connect import netbox_api_instance
-from zabbix_custom.remote_system.core.netbox_get import NetboxGet
+from remote_system.core.keep_api_connect import netbox_api_instance
+from remote_system.core.netbox_get import NetboxGet
 
 
 

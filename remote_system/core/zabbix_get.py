@@ -3,8 +3,8 @@
 
 
 
-from zabbix_custom.remote_system.core.keep_api_connect import zabbix_api_instance
-from zabbix_custom.remote_system.core.mappings import GetMappings
+from remote_system.core.keep_api_connect import zabbix_api_instance
+from remote_system.core.mappings import GetMappings
 
 
 class GetHost():

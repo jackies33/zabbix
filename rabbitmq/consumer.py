@@ -46,7 +46,7 @@ import sys
 from my_env import rabbitmq_host,rabbitmq_queue, my_path_sys
 sys.path.append(my_path_sys)
 
-from zabbix_custom.remote_system.core.handler_core import Handler_WebHook
+from remote_system.core.handler_core import Handler_WebHook
 
 
 

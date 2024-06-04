@@ -2,8 +2,8 @@
 
 
 
-from zabbix_custom.remote_system.core.keep_api_connect import netbox_api_instance
-from zabbix_custom.remote_system.core.nb_sync.classifier_for_sync import CLASSIFIER
+from remote_system.core.keep_api_connect import netbox_api_instance
+from remote_system.core.nb_sync.classifier_for_sync import CLASSIFIER
 
 
 class NetboxGet():
