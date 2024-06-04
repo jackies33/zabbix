@@ -36,8 +36,8 @@ class Creator_Hosts(BaseDeviceDataGet):
                     'type': 2,
                     'main': 1,
                     'useip': 1,
-                    'ip': "129.29.29.29",# Временный адрес пока ip пустой до update по device с актуальным адресом
-                    'dns': "",
+                    'ip': "127.199.199.199",# Временный адрес пока ip пустой до update по device с актуальным адресом
+                    'dns': '',
                     'port': "161",
                     'details': {
                             'version': 2,
@@ -55,6 +55,8 @@ class Creator_Hosts(BaseDeviceDataGet):
             return [True,created_host]
         except ZabbixAPIException as err:
             return [False,err]
+
+
 
 
 

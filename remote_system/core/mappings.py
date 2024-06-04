@@ -5,6 +5,7 @@ class GetMappings():
 
     group_template_mapping = {
             'Huawei Technologies Co./Huawei.VRP/': 'Huawei VRP by SNMP',
+            'Juniper Networks/Juniper.JUNOS/': 'Juniper by SNMP',
 
         }
 
@@ -14,6 +15,8 @@ class GetMappings():
                         "host_id = self.zapi.host.get(filter={'host': data['name']})[0]['hostid']",
                         "interfaces = self.zapi.hostinterface.get(filter={'hostids':host_id})",
                         "if not interfaces: raise ZabbixAPIException('No interfaces found for host')",
+                        #"interface_params = {'hostid': host_id,'type': 1,'main': 1,'useip': 1,'ip': '192.168.1.1','dns': '','port': '161'}",
+                        #"result = zapi.hostinterface.create(interface_params)",
                         "interface_id = interfaces[0]['interfaceid']",
                         "self.result = self.zapi.hostinterface.update(interfaceid=interface_id,ip=data['ip_address'])",
                         ],
@@ -40,6 +43,11 @@ class GetMappings():
                         "serials = self.zapi.host.update({'hostid': host_id,'inventory': {'location': data['phys_address']}})",
                         "host_info = self.zapi.host.get(filter={'host': data['name']},selectInventory=True)",
                         "self.result = host_info[0].get('inventory', {}).get('location')",
+                ],
+        'virtual_chassis':[
+                        "master_vc = data['vc']",
+                        "self.result = master_vc is None and self.zapi.host.delete(self.zapi.host.get(filter={'host': data['name']})[0]['hostid'])"
+
                 ],
     }
 

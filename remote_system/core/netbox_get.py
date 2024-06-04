@@ -21,6 +21,8 @@ class NetboxGet():
         except Exception as err:
             return [False,err]
 
+
+
     def get_all_devices(self):
             list_devices = []
             for device in self.nb.dcim.devices.all():
