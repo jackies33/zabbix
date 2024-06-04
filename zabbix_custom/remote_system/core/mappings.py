@@ -33,6 +33,13 @@ class GetMappings():
                    "self.zapi.host.update(hostid=host_id,tags=tags)",
                    "host_info = self.zapi.host.get(filter={'host': data['name']},selectTags='extend')",
                    "self.result = host_info[0].get('tags', [])",
-                   ]
+                   ],
+
+        'site' : [
+                        "host_id = self.zapi.host.get(filter={'host': data['name']})[0]['hostid']",
+                        "serials = self.zapi.host.update({'hostid': host_id,'inventory': {'location': data['phys_address']}})",
+                        "host_info = self.zapi.host.get(filter={'host': data['name']},selectInventory=True)",
+                        "self.result = host_info[0].get('inventory', {}).get('location')",
+                ],
     }
 

@@ -9,9 +9,9 @@ import sys
 
 sys.path.append('/opt/zabbix1')
 
-from remote_system.core.keep_api_connect import zabbix_api_instance
-from remote_system.core.parser_and_preparing import BaseDeviceDataGet
-from remote_system.core.netbox_get import NetboxGet
+from zabbix_custom.remote_system.core.keep_api_connect import zabbix_api_instance
+from zabbix_custom.remote_system.core.parser_and_preparing import BaseDeviceDataGet
+from zabbix_custom.remote_system.core.netbox_get import NetboxGet
 
 
 
@@ -30,8 +30,8 @@ class Creator_Hosts(BaseDeviceDataGet):
         Method for create device(host) in zabbix1
         """
         data = self.get_device_data()
-        netboxget = NetboxGet()
-        phys_address = netboxget.get_phys_address(**self.data)
+        #netboxget = NetboxGet()
+        #phys_address = netboxget.get_phys_address(**self.data)
         try:
             host_id = self.zapi.host.create(
                 host=data["name"],
@@ -53,7 +53,7 @@ class Creator_Hosts(BaseDeviceDataGet):
             )
             host_id = self.zapi.host.get(filter={'host': data['name']})[0]['hostid']
             self.zapi.host.update({'hostid': host_id, 'inventory_mode': 0})
-            self.zapi.host.update({'hostid': host_id,'inventory': {'location': phys_address}})
+            self.zapi.host.update({'hostid': host_id,'inventory': {'location': data["phys_address"]}})
             created_host = self.zapi.host.get(filter={"name": data["name"]})
             return [True,created_host]
         except ZabbixAPIException as err:

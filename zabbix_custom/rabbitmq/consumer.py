@@ -43,10 +43,10 @@ import time
 import json
 import sys
 
-from my_env import rabbitmq_host,rabbitmq_queue,MAX_MESSAGES_Rabbit,my_path_sys
+from my_env import rabbitmq_host,rabbitmq_queue, my_path_sys
 sys.path.append(my_path_sys)
 
-from remote_system.core.handler_core import Handler_WebHook
+from zabbix_custom.remote_system.core.handler_core import Handler_WebHook
 
 
 

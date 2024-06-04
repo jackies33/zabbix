@@ -5,9 +5,9 @@ import sys
 
 sys.path.append('/opt/zabbix1')
 
-from remote_system.core.mappings import GetMappings
-from remote_system.core.parser_and_preparing import BaseDeviceDataGet
-from remote_system.core.keep_api_connect import zabbix_api_instance
+from zabbix_custom.remote_system.core.mappings import GetMappings
+from zabbix_custom.remote_system.core.parser_and_preparing import BaseDeviceDataGet
+from zabbix_custom.remote_system.core.keep_api_connect import zabbix_api_instance
 
 
 
