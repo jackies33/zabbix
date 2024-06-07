@@ -6,11 +6,9 @@ class GetMappings():
     group_template_mapping = {
             'Huawei Technologies Co./Huawei.VRP/': 'Huawei VRP by SNMP',
             'Juniper Networks/Juniper.JUNOS/': 'Juniper by SNMP',
-
         }
 
     wh_update_mapping_essence = {
-
         'primary_ip4': [
                         "host_id = self.zapi.host.get(filter={'host': data['name']})[0]['hostid']",
                         "interfaces = self.zapi.hostinterface.get(filter={'hostids':host_id})",
@@ -44,10 +42,12 @@ class GetMappings():
                         "host_info = self.zapi.host.get(filter={'host': data['name']},selectInventory=True)",
                         "self.result = host_info[0].get('inventory', {}).get('location')",
                 ],
-        'virtual_chassis':[
-                        "master_vc = data['vc']",
-                        "self.result = master_vc is None and self.zapi.host.delete(self.zapi.host.get(filter={'host': data['name']})[0]['hostid'])"
+        #'virtual_chassis':[
+        #                "master_vc_name = data['vc']",
+        #                #"hosts = zapi.host.get(search={'host': master_vc_name}, searchWildcardsEnabled=True, output=['host'])",
+        #                #"hostnames = [host['host'] for host in hosts]",
+        #                "self.result = self.zapi.host.delete([host['hostid'] for host in self.zapi.host.get(search={'host': data['name']}, searchWildcardsEnabled=True) if host['host'] != master_vc_name])",
 
-                ],
+        #       ],
     }
 

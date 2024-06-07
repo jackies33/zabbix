@@ -2,6 +2,7 @@
 
 from my_env import my_path_sys
 import sys
+import threading
 
 sys.path.append(my_path_sys)
 
@@ -40,37 +41,44 @@ class Handler_WebHook():
             if ext_data_type == "netbox_main":
                 event_classifier = call.event_classifier(**data_ext)
                 if event_classifier[0] == True:
-                    event = event_classifier[1]['event']
-                    if event == "deleted":
-                        deleting = Remover_Hosts(data_ext)
-                        result = deleting.remove_host()
-                        return result
-                    elif event == "updated":
-                        #parse_data = call.parser_create_and_update(**data_ext)
-                        changes = call.compare_changes(**data_ext)
-                        updating = Updater_Hosts(**{"changes": changes, "data_ext": data_ext})
-                        result = updating.update_host()
-                        return changes
-                        #return [changes,parse_data,"updated"]
-                        #print("update")
-                    elif event == "created":
-                        #parse_data = call.parser_create_and_update(**data_ext)
-                        creating = Creator_Hosts(data_ext)
-                        result = creating.create_host()
-                        return result
-                    elif event == "update_before_delete":
-                        return ["skip update because before delete"]
-                        #print("skip update because before delete")
+                    if event_classifier[1]["target"] == "device":
+                        event = event_classifier[1]['event']
+                        if event == "deleted":
+                            deleting = Remover_Hosts(data_ext)
+                            result = deleting.remove_host()
+                            return result
+                        elif event == "updated":
+                            #parse_data = call.parser_create_and_update(**data_ext)
+                            changes = call.compare_changes(**data_ext)
+                            updating = Updater_Hosts(**{"changes": changes, "data_ext": data_ext})
+                            result = updating.update_host()
+                            return changes
+                            #return [changes,parse_data,"updated"]
+                            #print("update")
+                        elif event == "created":
+                            #parse_data = call.parser_create_and_update(**data_ext)
+                            creating = Creator_Hosts(data_ext)
+                            result = creating.create_host()
+                            return result
+                        elif event == "update_before_delete":
+                            return ["skip update because before delete"]
+                            #print("skip update because before delete")
 
-                    else:
+                        else:
 
-                        tg_massage = f"it was a problem with web_hook from netbox, " \
-                                     f"please check the log in netbox and web_handler for" \
-                                     f" get additional information |   ERROR from handler \n>>> {event_classifier[1]} <<<\n"
-                        print(tg_massage)
-                        return [False,tg_massage]
-
-
+                            tg_massage = f"it was a problem with web_hook from netbox, " \
+                                         f"please check the log in netbox and web_handler for" \
+                                         f" get additional information |   ERROR from handler \n>>> {event_classifier[1]} <<<\n"
+                            print(tg_massage)
+                            return [False,tg_massage]
+                    elif event_classifier[1]["target"] == "virtualchassis":
+                        event = event_classifier[1]['event']
+                        if event == "updated":
+                            changes = call.compare_changes(**data_ext)
+                            updating = Updater_Hosts(**{"changes": changes, "data_ext": data_ext})
+                            #result = updating.update_vc()
+                            thread = threading.Thread(target=lambda: updating.update_vc())# create separated flow for delete device created from webhook and create only one - master
+                            thread.start()
                 elif event_classifier[0] == False:
                          tg_massage = f"it was a problem with web_hook from netbox, " \
                                  f"please check the log in netbox and web_handler for" \

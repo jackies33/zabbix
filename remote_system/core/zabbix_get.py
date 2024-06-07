@@ -15,6 +15,16 @@ class GetHost():
     def __init__(self):
             self.zapi = zabbix_api_instance.get_instance()
 
+    def get_vc_hosts(self,**kwargs):
+        try:
+            hosts = self.zapi.host.get(search={'name': kwargs["name"]}, output=['hostid', 'name'])
+            if hosts:
+                host_ids = [host['hostid'] for host in hosts]
+                result = self.zapi.host.delete(*host_ids)
+                return result
+        except Exception as e:
+            print(f'Error: {e}')
+            return e
 
     def get_host(self):
        try:
@@ -25,7 +35,6 @@ class GetHost():
        except Exception as e:
            print(f'Error: {e}')
            return e
-
 
 
 class GetProxy():
