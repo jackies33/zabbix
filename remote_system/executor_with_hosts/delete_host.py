@@ -2,7 +2,7 @@
 
 import sys
 
-sys.path.append('/opt/zabbix1')
+sys.path.append('/opt/zabbix_custom/')
 
 from remote_system.core.parser_and_preparing import BaseDeviceDataGet
 from remote_system.core.keep_api_connect import zabbix_api_instance
@@ -25,7 +25,7 @@ class Remover_Hosts(BaseDeviceDataGet):
         """
         try:
             data = self.get_only_name()
-            host_id = self.zapi.host.get(filter={"host": data["name"]})[0]["hostid"]
+            host_id = data['host_id_local']
             result = self.zapi.host.delete(host_id)
             return [True,result]
         except Exception as e:

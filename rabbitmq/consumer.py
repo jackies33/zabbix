@@ -55,8 +55,11 @@ def callback(ch, method, properties, body):
     data = {"data_type": "netbox_main", "data": data_for_sent}
     call = Handler_WebHook()
     result = call.core_handler(**data)
-    for r in result:
-        print(r)
+    try:
+        for r in result:
+            print(r)
+    except Exception as err:
+        print(err)
     #print(f"Received message: {body.decode()}")
 
 def consume_from_rabbitmq(queue_name):

@@ -1,14 +1,14 @@
 
 
 
-from my_env import my_path_sys
+from .my_env import my_path_sys
 import sys
 
 sys.path.append(my_path_sys)
 
 
 from remote_system.executor_with_hosts.classifier_for_device import CLASSIFIER
-from remote_system.core.zabbix_get import GetProxy,GetGroup,GetTemplate
+from remote_system.core.zabbix_get import GetProxy,GetGroup,GetTemplate,GetHost
 from remote_system.core.netbox_get import NetboxGet
 
 null = None
@@ -71,7 +71,56 @@ class Parser_Json():
         else:
             return False
 
+    def compare_exporter(self,**data):# check differences between remote and local extracted data
+        devices_remote = data["devices_remote"]
+        devices_local = data["devices_local"]
+        exclude_keys = ['site', 'tenant','custom_fields','manufacturer']
+        delete_list = []
+        update_list = []
+        create_list = []
+        differences = {}
+        try:
+            for dict_remote in devices_remote:
+                found = False
+                for dict_local in devices_local:
+                    if dict_remote.get('host_name') == dict_local.get('host_name'):
+                        if dict_remote.get('host_id_remote') == dict_local.get('host_id_remote'):
+                            diff = {}
+                            for key in dict_remote.keys():
+                                local_value = dict_local.get(key)
+                                remote_value = dict_remote.get(key)
+                                if remote_value == "None":
+                                    remote_value = None
+                                if local_value == "None":
+                                    local_value = None
+                                if key not in exclude_keys and local_value != remote_value:
+                                    diff.update({key:{'remote_value': remote_value,
+                                        'local_value': local_value}})
+                            if diff:
+                                diff = {"data_ext":{"data":dict_remote},"changes":diff}
+                                update_list.append(diff)
+                            found = True
 
+                if not found:
+                    diff = {"data":dict_remote} #"diff": [{"device_not_exist":"Not Found"}]}
+                    create_list.append(diff)
+        except TypeError as err:
+            print(err)
+        try:
+            for dict_local in devices_local:
+                found = False
+                if dict_local.get('host_id_remote') is not None:
+                    for dict_remote in devices_remote:
+                        if dict_remote.get('host_id_remote') == dict_local.get('host_id_remote'):
+                            found = True
+                    if not found:
+                        diff = {"data":{"name": dict_local['host_name']}}
+                                #"diff": [{"for_delete": "Found in local but not in remote"}]}
+                        delete_list.append(diff)
+        except TypeError as err:
+            print(err)
+        differences.update({"update":update_list,"create":create_list,"delete":delete_list})
+        return differences
 
 
 class BaseDeviceDataGet:
@@ -103,23 +152,48 @@ class BaseDeviceDataGet:
         Method for get information about device from WH
         """
         name = self.safe_get(self.data, 'name')
+        host_id_remote = self.safe_get(self.data, 'id')
         device_type = self.safe_get(self.data, 'device_type', 'model')
         manufacturer = self.safe_get(self.data, 'device_type', 'manufacturer', 'name')
         platform = self.safe_get(self.data, 'platform', 'name')
         device_role = self.safe_get(self.data, 'device_role', 'name')
         ip_address = (self.safe_get(self.data, 'primary_ip4', 'address'))
+        host_status = self.safe_get(self.data, 'status', 'label')
+        if host_status == "Active":
+            host_status = "0"
+        elif host_status == "Offline":
+            host_status = "1"
+        else:
+            host_status = "0"
         if ip_address:
             ip_address = ip_address.split("/")[0]
         custom_fields = self.safe_get(self.data, 'custom_fields')
         serial = self.safe_get(self.data, 'serial')
         netboxget = NetboxGet()
+        phys_address = None
         phys_address = netboxget.get_phys_address(**self.data)
+        try:
+            if phys_address[0] == True:
+                phys_address = phys_address[1]
+        except Exception:
+            pass
+        netboxget = NetboxGet()
+        vc = netboxget.get_vc_master(**self.data)
+        try:
+            if vc[0] == True:
+                vc = vc[1]
+            elif vc[0] == False:
+                vc = None
+        except Exception:
+            pass
         #vc = netboxget.get_vc(**self.data)
-        vc = None
-        vc = (self.safe_get(self.data,'virtual_chassis', 'master' , 'name'))
+        #vc = None
+        #vc = (self.safe_get(self.data,'virtual_chassis', 'master' , 'name'))
         group = f"{manufacturer}/{platform}/{device_type}"
         group_name = GetGroup(group)
         group_id = group_name.get_group()
+        localid = GetHost()
+        host_id_local = localid.get_local_id(**{"host_name":name,"host_id_remote":str(host_id_remote)})
         templating = GetTemplate(group)
         template_id = templating.classifier_template()
         proxy = GetProxy()
@@ -131,57 +205,8 @@ class BaseDeviceDataGet:
         device_data = {
             "name": name,
             "device_type": device_type,
-            "manufacturer": manufacturer,
-            "platform": platform,
-            "device_role": device_role,
-            "custom_fields": custom_fields,
-            "serial": serial,
-            "ip_address": ip_address,
-            "group": group,
-            "group_id": group_id,
-            "template_id": template_id,
-            "proxy_id": proxy_id,
-            "snmp_comm": snmp_comm,
-            "phys_address":phys_address,
-            "vc":vc,
-        }
-        return device_data
-
-    def get_data_for_full_create(self):
-        """
-        Method for preapre information about device from Netbox for full create
-        """
-        name = self.safe_get(self.data, 'host_name')
-        device_type = self.safe_get(self.data, 'device_type')
-        manufacturer = self.safe_get(self.data, 'manufacturer')
-        platform = self.safe_get(self.data, 'platform')
-        device_role = self.safe_get(self.data, 'device_role')
-        ip_address = self.safe_get(self.data, 'ip_address')
-        if ip_address:
-            ip_address = ip_address.split("/")[0]
-        custom_fields = self.safe_get(self.data, 'custom_fields')
-        tg_group = self.safe_get(self.data, 'tg_resource_group')
-        map_group = self.safe_get(self.data, 'map_resource_group')
-        name_of_est = self.safe_get(self.data, 'name_of_est')
-        serial = self.safe_get(self.data, 'serial')
-        phys_address = self.safe_get(self.data, 'phys_address')
-        # vc = netboxget.get_vc(**self.data)
-        vc = None
-        vc = (self.safe_get(self.data, 'virtual_chassis', 'master', 'name'))
-        group = f"{manufacturer}/{platform}/{device_type}"
-        group_name = GetGroup(group)
-        group_id = group_name.get_group()
-        templating = GetTemplate(group)
-        template_id = templating.classifier_template()
-        proxy = GetProxy()
-        proxy_id = proxy.get_proxy_next_choise()
-        call = CLASSIFIER()
-        snmp_comm = call.classifier_snmp_comm \
-            (**{"device_type": device_type, "device_role": device_role, "custom_filed": custom_fields})
-
-        device_data = {
-            "name": name,
-            "device_type": device_type,
+            "host_id_remote": str(host_id_remote),
+            "host_id_local": str(host_id_local),
             "manufacturer": manufacturer,
             "platform": platform,
             "device_role": device_role,
@@ -195,6 +220,78 @@ class BaseDeviceDataGet:
             "snmp_comm": snmp_comm,
             "phys_address": phys_address,
             "vc": vc,
+            "host_status": host_status
+        }
+        return device_data
+
+    def get_data_for_full_create(self):
+        """
+        Method for preapre information about device from Netbox for full create
+        """
+        name = self.safe_get(self.data, 'host_name')
+        device_type = self.safe_get(self.data, 'device_type')
+        manufacturer = self.safe_get(self.data, 'manufacturer')
+        platform = self.safe_get(self.data, 'platform')
+        device_role = self.safe_get(self.data, 'device_role')
+        ip_address = self.safe_get(self.data, 'ip_address')
+        host_id_remote = self.safe_get(self.data, 'host_id_remote')
+        host_status = self.safe_get(self.data, 'host_status')
+        if host_status == "Active":
+            host_status = "0"
+        elif host_status == "Offline":
+            host_status = "1"
+        else:
+            host_status = "0"
+        if ip_address:
+            ip_address = ip_address.split("/")[0]
+        custom_fields = self.safe_get(self.data, 'custom_fields')
+        tg_group = self.safe_get(self.data, 'tg_resource_group')
+        map_group = self.safe_get(self.data, 'map_resource_group')
+        serial = self.safe_get(self.data, 'sn')
+        phys_address = None
+        phys_address = self.safe_get(self.data, 'my_address')
+        # vc = netboxget.get_vc(**self.data)
+        netboxget = NetboxGet()
+        vc = netboxget.get_vc_master(**self.data)
+        try:
+            if vc[0] == True:
+                vc = vc[1]
+            elif vc[0] == False:
+                vc = None
+        except Exception:
+            pass
+        group = f"{manufacturer}/{platform}/{device_type}"
+        group_name = GetGroup(group)
+        group_id = group_name.get_group()
+        localid = GetHost()
+        host_id_local = localid.get_local_id(**{"host_name": name, "host_id_remote": str(host_id_remote)})
+        templating = GetTemplate(group)
+        template_id = templating.classifier_template()
+        proxy = GetProxy()
+        proxy_id = proxy.get_proxy_next_choise()
+        call = CLASSIFIER()
+        snmp_comm = call.classifier_snmp_comm \
+            (**{"device_type": device_type, "device_role": device_role, "custom_filed": custom_fields})
+
+        device_data = {
+            "name": name,
+            "device_type": device_type,
+            "host_id_remote":  str(host_id_remote),
+            "host_id_local": str(host_id_local),
+            "manufacturer": manufacturer,
+            "platform": platform,
+            "device_role": device_role,
+            "custom_fields": custom_fields,
+            "serial": serial,
+            "ip_address": ip_address,
+            "group": group,
+            "group_id": group_id,
+            "template_id": template_id,
+            "proxy_id": proxy_id,
+            "snmp_comm": snmp_comm,
+            "phys_address": phys_address,
+            "vc": vc,
+            "host_status": host_status,
         }
         return device_data
 
@@ -214,9 +311,11 @@ class BaseDeviceDataGet:
         }
         return vc_data
 
-#wh = {'event': 'updated', 'timestamp': '2024-06-04 09:42:38.740976+00:00', 'model': 'device', 'username': 'admin', 'request_id': '355f9f6c-b91e-4408-8404-735b4e796878', 'data': {'id': 239, 'url': '/api/dcim/devices/239/', 'display': '2k-asw-9-56-1-0.0', 'name': '2k-asw-9-56-1-0.0', 'device_type': {'id': 9, 'url': '/api/dcim/device-types/9/', 'display': 'EX3400-48P', 'manufacturer': {'id': 1, 'url': '/api/dcim/manufacturers/1/', 'display': 'Juniper Networks', 'name': 'Juniper Networks', 'slug': 'juniper-networks'}, 'model': 'EX3400-48P', 'slug': 'Ex3400-48P'}, 'device_role': {'id': 1, 'url': '/api/dcim/device-roles/1/', 'display': 'asw', 'name': 'asw', 'slug': 'asw'}, 'tenant': {'id': 4, 'url': '/api/tenancy/tenants/4/', 'display': 'gku_mo_moc_ikt', 'name': 'gku_mo_moc_ikt', 'slug': 'gku_mo_moc_ikt'}, 'platform': {'id': 3, 'url': '/api/dcim/platforms/3/', 'display': 'Juniper.JUNOS', 'name': 'Juniper.JUNOS', 'slug': 'juniper-junos'}, 'serial': '', 'asset_tag': None, 'site': {'id': 14, 'url': '/api/dcim/sites/14/', 'display': '2k', 'name': '2k', 'slug': '2k'}, 'location': None, 'rack': None, 'position': None, 'face': None, 'parent_device': None, 'status': {'value': 'active', 'label': 'Active'}, 'airflow': None, 'primary_ip': None, 'primary_ip4': None, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': {'id': 22, 'url': '/api/dcim/virtual-chassis/22/', 'display': '2k-asw-9-56-1-0', 'name': '2k-asw-9-56-1-0', 'master': None}, 'vc_position': 0, 'vc_priority': None, 'description': '', 'comments': '', 'config_template': None, 'local_context_data': None, 'tags': [], 'custom_fields': {'Connection_Scheme': 'ssh', 'MAP_Group': None, 'Name_of_Establishment': None, 'TG_Group': {'id': 2, 'url': '/api/tenancy/contact-roles/2/', 'display': 'TG_Group_OGV_IKMO_tsp', 'name': 'TG_Group_OGV_IKMO_tsp', 'slug': 'tg_group_ogv_ikmo_tsp'}}, 'created': '2024-06-04T12:42:37.431751+03:00', 'last_updated': '2024-06-04T12:42:38.716942+03:00'}, 'snapshots': {'prechange': {'created': '2024-06-04T09:42:37.431Z', 'last_updated': '2024-06-04T09:42:37.431Z', 'description': '', 'comments': '', 'local_context_data': None, 'device_type': 9, 'device_role': 1, 'tenant': 4, 'platform': 3, 'name': '2k-asw-9-56-1-0.0', 'serial': '', 'asset_tag': None, 'site': 14, 'location': None, 'rack': None, 'position': None, 'face': '', 'status': 'active', 'airflow': '', 'primary_ip4': None, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': None, 'vc_position': None, 'vc_priority': None, 'config_template': None, 'custom_fields': {'TG_Group': 2, 'Connection_Scheme': 'ssh'}, 'tags': []}, 'postchange': {'created': '2024-06-04T09:42:37.431Z', 'last_updated': '2024-06-04T09:42:38.716Z', 'description': '', 'comments': '', 'local_context_data': None, 'device_type': 9, 'device_role': 1, 'tenant': 4, 'platform': 3, 'name': '2k-asw-9-56-1-0.0', 'serial': '', 'asset_tag': None, 'site': 14, 'location': None, 'rack': None, 'position': None, 'face': '', 'status': 'active', 'airflow': '', 'primary_ip4': None, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': 22, 'vc_position': 0, 'vc_priority': None, 'config_template': None, 'custom_fields': {'TG_Group': 2, 'Connection_Scheme': 'ssh'}, 'tags': []}}}
 
-#call = Parser_Json()
+
+
+#call  = Parser_Json()
+#wh = {'event': 'updated', 'timestamp': '2024-06-14 09:19:30.876439+00:00', 'model': 'device', 'username': 'admin', 'request_id': '94db0b3f-8507-46c3-8a4f-8b7501208d29', 'data': {'id': 206, 'url': '/api/dcim/devices/206/', 'display': '2k-dopme-asw-2-108-1-0.1', 'name': '2k-dopme-asw-2-108-1-0.1', 'device_type': {'id': 2, 'url': '/api/dcim/device-types/2/', 'display': 'EX2200-48P-4G', 'manufacturer': {'id': 1, 'url': '/api/dcim/manufacturers/1/', 'display': 'Juniper Networks', 'name': 'Juniper Networks', 'slug': 'juniper-networks'}, 'model': 'EX2200-48P-4G', 'slug': 'ex2200-48p-4g'}, 'device_role': {'id': 2, 'url': '/api/dcim/device-roles/2/', 'display': 'P/PE', 'name': 'P/PE', 'slug': 'ppe'}, 'tenant': {'id': 4, 'url': '/api/tenancy/tenants/4/', 'display': 'gku_mo_moc_ikt', 'name': 'gku_mo_moc_ikt', 'slug': 'gku_mo_moc_ikt'}, 'platform': {'id': 3, 'url': '/api/dcim/platforms/3/', 'display': 'Juniper.JUNOS', 'name': 'Juniper.JUNOS', 'slug': 'juniper-junos'}, 'serial': 'NY0220100936', 'asset_tag': None, 'site': {'id': 14, 'url': '/api/dcim/sites/14/', 'display': '2k', 'name': '2k', 'slug': '2k'}, 'location': None, 'rack': None, 'position': None, 'face': None, 'parent_device': None, 'status': {'value': 'active', 'label': 'Active'}, 'airflow': None, 'primary_ip': {'id': 164, 'url': '/api/ipam/ip-addresses/164/', 'display': '10.100.15.2/24', 'family': 4, 'address': '10.100.15.2/24'}, 'primary_ip4': {'id': 164, 'url': '/api/ipam/ip-addresses/164/', 'display': '10.100.15.2/24', 'family': 4, 'address': '10.100.15.2/24'}, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': {'id': 18, 'url': '/api/dcim/virtual-chassis/18/', 'display': '2k-asw-2-108-1-0', 'name': '2k-asw-2-108-1-0', 'master': {'id': 206, 'url': '/api/dcim/devices/206/', 'display': '2k-asw-2-108-1-0.1', 'name': '2k-asw-2-108-1-0.1'}}, 'vc_position': 1, 'vc_priority': None, 'description': '', 'comments': '', 'config_template': None, 'local_context_data': None, 'tags': [], 'custom_fields': {'Connection_Scheme': 'ssh', 'MAP_Group': None, 'Name_of_Establishment': None, 'TG_Group': {'id': 2, 'url': '/api/tenancy/contact-roles/2/', 'display': 'TG_Group_OGV_IKMO_tsp', 'name': 'TG_Group_OGV_IKMO_tsp', 'slug': 'tg_group_ogv_ikmo_tsp'}}, 'created': '2024-04-08T20:20:10.635029+03:00', 'last_updated': '2024-06-14T12:19:30.848647+03:00'}, 'snapshots': {'prechange': {'created': '2024-04-08T17:20:10.635Z', 'last_updated': '2024-04-08T17:20:14.637Z', 'description': '', 'comments': '', 'local_context_data': None, 'device_type': 9, 'device_role': 1, 'tenant': 4, 'platform': 3, 'name': '2k-asw-2-108-1-0.1', 'serial': 'NY0220100936', 'asset_tag': None, 'site': 14, 'location': None, 'rack': None, 'position': None, 'face': '', 'status': 'active', 'airflow': '', 'primary_ip4': 164, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': 18, 'vc_position': 1, 'vc_priority': None, 'config_template': None, 'custom_fields': {'TG_Group': 3, 'MAP_Group': None, 'Connection_Scheme': 'ssh', 'Name_of_Establishment': None}, 'tags': []}, 'postchange': {'created': '2024-04-08T17:20:10.635Z', 'last_updated': '2024-06-14T09:19:30.848Z', 'description': '', 'comments': '', 'local_context_data': None, 'device_type': 2, 'device_role': 2, 'tenant': 4, 'platform': 3, 'name': '2k-dopme-asw-2-108-1-0.1', 'serial': 'NY0220100936', 'asset_tag': None, 'site': 14, 'location': None, 'rack': None, 'position': None, 'face': '', 'status': 'active', 'airflow': '', 'primary_ip4': 164, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': 18, 'vc_position': 1, 'vc_priority': None, 'config_template': None, 'custom_fields': {'TG_Group': 2, 'MAP_Group': None, 'Connection_Scheme': 'ssh', 'Name_of_Establishment': None}, 'tags': []}}}
 #result = call.compare_changes(**wh)
 #print(result)
 

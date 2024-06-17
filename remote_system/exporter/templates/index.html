@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Export</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .btn-start {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .spinner {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 123, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: #007bff;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .success-message {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Start Export</h1>
+        <button class="btn-start" onclick="startExport()">Start</button>
+        <div class="spinner" id="spinner"></div>
+        <div id="result" class="success-message"></div>
+    </div>
+
+    <script>
+        function startExport() {
+            var btnStart = document.querySelector('.btn-start');
+            var spinner = document.getElementById('spinner');
+            var resultDiv = document.getElementById('result');
+
+            btnStart.style.display = 'none';
+            spinner.style.display = 'block';
+
+            // Send POST request to start export
+            fetch('/start', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                spinner.style.display = 'none';
+                resultDiv.textContent = data.message;
+                resultDiv.style.display = 'block'; // Show success message
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                spinner.style.display = 'none';
+                alert('Error starting export. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>
