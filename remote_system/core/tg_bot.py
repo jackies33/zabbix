@@ -1,15 +1,19 @@
 
 
+
 import requests
+import sys
 
+sys.path.append('/opt/zabbix_custom/')
 
-class telega_bot():
+from remote_system.core.my_env import chat_id,tg_token
+
+class tg_bot():
 
     """
     Class for telegram bot , send messages
     """
 
-    from ..executor_with_hosts.my_pass import tg_token, chat_id
     def __init__(self, message=None):
         self.message = message
 
@@ -17,7 +21,7 @@ class telega_bot():
     def tg_sender(self,*args):
 
                 try:
-                    url = f"https://api.telegram.org/bot{self.tg_token}/sendMessage?chat_id={self.chat_id}&text={self.message}"
+                    url = f"https://api.telegram.org/bot{tg_token}/sendMessage?chat_id={chat_id}&text={self.message}"
                     requests.get(url).json()
                 except ValueError:
                     print("Error send message")
@@ -26,7 +30,7 @@ class telega_bot():
 
 if __name__ == '__main__':
         message = 'test'
-        tgbot = telega_bot()
+        tgbot = tg_bot()
         tgbot.tg_sender(message)
 
 

@@ -4,7 +4,7 @@
 class CLASSIFIER():
 
         """
-        Class for classification some things for noc's extractors
+        Class for classification some things for netbox extractors
 
         """
 
@@ -20,11 +20,12 @@ class CLASSIFIER():
                             self.device_type == "NetEngine 8000 F1A-8H20Q" and self.device_role == "p/pe" or \
                             self.device_type == "S5700-28C-EI-24S" and self.device_role == "m-dsw"  or \
                             self.device_type == "S5735-S48S4X" and self.device_role == "m-dsw" :
-                        snmp_comm = "nocpr0ject"
-                        return snmp_comm
+                        authprof = "3"
+                    elif self.device_role == "dwdm":
+                        authprof = "4"
                     else:
-                        snmp_comm = "nocproject"
-                        return snmp_comm
+                        authprof = "2"
+                    return authprof
 
 
         def classifier_AuthScheme(self,*args):
