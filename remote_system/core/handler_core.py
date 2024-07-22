@@ -2,7 +2,8 @@
 
 from my_env import my_path_sys
 import sys
-import threading
+#import threading
+import datetime
 
 sys.path.append(my_path_sys)
 
@@ -13,7 +14,7 @@ from remote_system.executor_with_hosts.update_host import Updater_Hosts
 
 
 from remote_system.core.parser_and_preparing import Parser_Json
-#from remote_system.core.tg_bot import telega_bot
+from remote_system.core.tg_bot import tg_bot
 
 
 
@@ -36,29 +37,53 @@ class Handler_WebHook():
 
         ext_data_type = kwargs["data_type"]
         data_ext = kwargs["data"]
+        print(data_ext)
         call = Parser_Json()
         try:
             if ext_data_type == "netbox_main":
                 event_classifier = call.event_classifier(**data_ext)
+                host_name = data_ext['data']['name']
                 if event_classifier[0] == True:
                     if event_classifier[1]["target"] == "device":
                         event = event_classifier[1]['event']
                         if event == "deleted":
                             deleting = Remover_Hosts(data_ext)
                             result = deleting.remove_host()
+                            #primary_ip = data_ext['primary_ip4']['address']
+                            if result[0] == True:
+                                tg_message = (
+                                    f'ZABBIX.handler[ "Event_Delete Device" ]\n Device Name - '
+                                    f'[ "{host_name}" ] \n Time: [ "{datetime.datetime.now()}" ]'
+                                )
+                                sender = tg_bot(tg_message)
+                                sender.tg_sender()
                             return result
                         elif event == "updated":
                             #parse_data = call.parser_create_and_update(**data_ext)
                             changes = call.compare_changes(**data_ext)
                             updating = Updater_Hosts(**{"changes": changes, "data_ext": data_ext})
                             result = updating.update_host("webhook")
-                            return changes
+                            if result[0] == True:
+                                tg_message = (
+                                    f'ZABBIX.handler[ "Event_Update Device" ]\n Device Name - '
+                                    f'[ "{host_name}" ] \n Time: [ "{datetime.datetime.now()}" ]'
+                                )
+                                #sender = tg_bot(tg_message)
+                                #sender.tg_sender()
+                            return result
                             #return [changes,parse_data,"updated"]
                             #print("update")
                         elif event == "created":
                             #parse_data = call.parser_create_and_update(**data_ext)
                             creating = Creator_Hosts(data_ext)
                             result = creating.create_host()
+                            if result[0] == True:
+                                tg_message = (
+                                    f'ZABBIX.handler[ "Event_Create Device" ]\n Device Name - '
+                                    f'[ "{host_name}" ] \n Time: [ "{datetime.datetime.now()}" ]'
+                                )
+                                #sender = tg_bot(tg_message)
+                                #sender.tg_sender()
                             return result
                         elif event == "update_before_delete":
                             return ["skip update because before delete"]
@@ -88,17 +113,4 @@ class Handler_WebHook():
             return [False, err]
 
 
-
-
-#my_wh = {'event': 'created', 'timestamp': '2024-06-04 09:56:30.779674+00:00', 'model': 'device', 'username': 'admin', 'request_id': '968b1910-8be0-4ffa-af87-adaed4f2a4d5', 'data': {'id': 246, 'url': '/api/dcim/devices/246/', 'display': 'mfc-035-ar01', 'name': 'mfc-035-ar01', 'device_type': {'id': 8, 'url': '/api/dcim/device-types/8/', 'display': 'AR6120', 'manufacturer': {'id': 2, 'url': '/api/dcim/manufacturers/2/', 'display': 'Huawei Technologies Co.', 'name': 'Huawei Technologies Co.', 'slug': 'huawei-technologies-co'}, 'model': 'AR6120', 'slug': 'ar6120'}, 'device_role': {'id': 2, 'url': '/api/dcim/device-roles/2/', 'display': 'P/PE', 'name': 'P/PE', 'slug': 'ppe'}, 'tenant': {'id': 4, 'url': '/api/tenancy/tenants/4/', 'display': 'gku_mo_moc_ikt', 'name': 'gku_mo_moc_ikt', 'slug': 'gku_mo_moc_ikt'}, 'platform': {'id': 2, 'url': '/api/dcim/platforms/2/', 'display': 'Huawei.VRP', 'name': 'Huawei.VRP', 'slug': 'huawei-vrp'}, 'serial': '', 'asset_tag': None, 'site': {'id': 21, 'url': '/api/dcim/sites/21/', 'display': 'my_new_site', 'name': 'my_new_site', 'slug': 'my_new_site'}, 'location': None, 'rack': None, 'position': None, 'face': None, 'parent_device': None, 'status': {'value': 'active', 'label': 'Active'}, 'airflow': {'value': 'left-to-right', 'label': 'Left to right'}, 'primary_ip': None, 'primary_ip4': None, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': None, 'vc_position': None, 'vc_priority': None, 'description': '', 'comments': '', 'config_template': None, 'local_context_data': None, 'tags': [], 'custom_fields': {'Connection_Scheme': 'ssh', 'MAP_Group': None, 'Name_of_Establishment': None, 'TG_Group': {'id': 2, 'url': '/api/tenancy/contact-roles/2/', 'display': 'TG_Group_OGV_IKMO_tsp', 'name': 'TG_Group_OGV_IKMO_tsp', 'slug': 'tg_group_ogv_ikmo_tsp'}}, 'created': '2024-06-04T12:56:30.721584+03:00', 'last_updated': '2024-06-04T12:56:30.721603+03:00'}, 'snapshots': {'prechange': None, 'postchange': {'created': '2024-06-04T09:56:30.721Z', 'last_updated': '2024-06-04T09:56:30.721Z', 'description': '', 'comments': '', 'local_context_data': None, 'device_type': 8, 'device_role': 2, 'tenant': 4, 'platform': 2, 'name': 'mfc-035-ar01', 'serial': '', 'asset_tag': None, 'site': 21, 'location': None, 'rack': None, 'position': None, 'face': '', 'status': 'active', 'airflow': 'left-to-right', 'primary_ip4': None, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': None, 'vc_position': None, 'vc_priority': None, 'config_template': None, 'custom_fields': {'Connection_Scheme': 'ssh', 'TG_Group': 2}, 'tags': []}}}
-
-#my_wh = {'event': 'created', 'timestamp': '2024-06-04 09:42:37.489314+00:00', 'model': 'device', 'username': 'admin', 'request_id': '668f5700-c027-4c08-a023-06b324d1b145', 'data': {'id': 239, 'url': '/api/dcim/devices/239/', 'display': '2k-asw-9-56-1-0.0', 'name': '2k-asw-9-56-1-0.0', 'device_type': {'id': 9, 'url': '/api/dcim/device-types/9/', 'display': 'EX3400-48P', 'manufacturer': {'id': 1, 'url': '/api/dcim/manufacturers/1/', 'display': 'Juniper Networks', 'name': 'Juniper Networks', 'slug': 'juniper-networks'}, 'model': 'EX3400-48P', 'slug': 'Ex3400-48P'}, 'device_role': {'id': 1, 'url': '/api/dcim/device-roles/1/', 'display': 'asw', 'name': 'asw', 'slug': 'asw'}, 'tenant': {'id': 4, 'url': '/api/tenancy/tenants/4/', 'display': 'gku_mo_moc_ikt', 'name': 'gku_mo_moc_ikt', 'slug': 'gku_mo_moc_ikt'}, 'platform': {'id': 3, 'url': '/api/dcim/platforms/3/', 'display': 'Juniper.JUNOS', 'name': 'Juniper.JUNOS', 'slug': 'juniper-junos'}, 'serial': '', 'asset_tag': None, 'site': {'id': 14, 'url': '/api/dcim/sites/14/', 'display': '2k', 'name': '2k', 'slug': '2k'}, 'location': None, 'rack': None, 'position': None, 'face': None, 'parent_device': None, 'status': {'value': 'active', 'label': 'Active'}, 'airflow': None, 'primary_ip': None, 'primary_ip4': None, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': None, 'vc_position': None, 'vc_priority': None, 'description': '', 'comments': '', 'config_template': None, 'local_context_data': None, 'tags': [], 'custom_fields': {'Connection_Scheme': 'ssh', 'MAP_Group': None, 'Name_of_Establishment': None, 'TG_Group': {'id': 2, 'url': '/api/tenancy/contact-roles/2/', 'display': 'TG_Group_OGV_IKMO_tsp', 'name': 'TG_Group_OGV_IKMO_tsp', 'slug': 'tg_group_ogv_ikmo_tsp'}}, 'created': '2024-06-04T12:42:37.431751+03:00', 'last_updated': '2024-06-04T12:42:37.431768+03:00'}, 'snapshots': {'prechange': None, 'postchange': {'created': '2024-06-04T09:42:37.431Z', 'last_updated': '2024-06-04T09:42:37.431Z', 'description': '', 'comments': '', 'local_context_data': None, 'device_type': 9, 'device_role': 1, 'tenant': 4, 'platform': 3, 'name': '2k-asw-9-56-1-0.0', 'serial': '', 'asset_tag': None, 'site': 14, 'location': None, 'rack': None, 'position': None, 'face': '', 'status': 'active', 'airflow': '', 'primary_ip4': None, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': None, 'vc_position': None, 'vc_priority': None, 'config_template': None, 'custom_fields': {'Connection_Scheme': 'ssh', 'TG_Group': 2}, 'tags': []}}}
-
-#my_wh = {'event': 'updated', 'timestamp': '2024-06-13 09:29:49.682950+00:00', 'model': 'device', 'username': 'admin', 'request_id': '0c47a820-7f15-4d7b-983e-a642b7e2da37', 'data': {'id': 514, 'url': '/api/dcim/devices/514/', 'display': '2k-asw-9-56-1-0.1', 'name': '2k-asw-9-56-1-0.1', 'device_type': {'id': 9, 'url': '/api/dcim/device-types/9/', 'display': 'EX3400-48P', 'manufacturer': {'id': 1, 'url': '/api/dcim/manufacturers/1/', 'display': 'Juniper Networks', 'name': 'Juniper Networks', 'slug': 'juniper-networks'}, 'model': 'EX3400-48P', 'slug': 'Ex3400-48P'}, 'device_role': {'id': 1, 'url': '/api/dcim/device-roles/1/', 'display': 'asw', 'name': 'asw', 'slug': 'asw'}, 'tenant': {'id': 4, 'url': '/api/tenancy/tenants/4/', 'display': 'gku_mo_moc_ikt', 'name': 'gku_mo_moc_ikt', 'slug': 'gku_mo_moc_ikt'}, 'platform': {'id': 3, 'url': '/api/dcim/platforms/3/', 'display': 'Juniper.JUNOS', 'name': 'Juniper.JUNOS', 'slug': 'juniper-junos'}, 'serial': '', 'asset_tag': None, 'site': {'id': 14, 'url': '/api/dcim/sites/14/', 'display': '2k', 'name': '2k', 'slug': '2k'}, 'location': None, 'rack': None, 'position': None, 'face': None, 'parent_device': None, 'status': {'value': 'active', 'label': 'Active'}, 'airflow': None, 'primary_ip': None, 'primary_ip4': None, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': {'id': 62, 'url': '/api/dcim/virtual-chassis/62/', 'display': '2k-asw-9-56-1-0', 'name': '2k-asw-9-56-1-0', 'master': {'id': 514, 'url': '/api/dcim/devices/514/', 'display': '2k-asw-9-56-1-0.1', 'name': '2k-asw-9-56-1-0.1'}}, 'vc_position': 1, 'vc_priority': None, 'description': '', 'comments': '', 'config_template': None, 'local_context_data': None, 'tags': [], 'custom_fields': {'Connection_Scheme': 'ssh', 'MAP_Group': None, 'Name_of_Establishment': '2k', 'TG_Group': {'id': 3, 'url': '/api/tenancy/contact-roles/3/', 'display': 'TG_Group_MOCIKT_Main', 'name': 'TG_Group_MOCIKT_Main', 'slug': 'tg_group_mocikt_main'}}, 'created': '2024-06-13T12:29:46.119303+03:00', 'last_updated': '2024-06-13T12:29:49.660532+03:00'}, 'snapshots': {'prechange': {'created': '2024-06-13T09:29:46.119Z', 'last_updated': '2024-06-13T09:29:49.506Z', 'description': '', 'comments': '', 'local_context_data': None, 'device_type': 9, 'device_role': 1, 'tenant': 4, 'platform': 3, 'name': '2k-asw-9-56-1-0.1', 'serial': '', 'asset_tag': None, 'site': 14, 'location': None, 'rack': None, 'position': None, 'face': '', 'status': 'active', 'airflow': '', 'primary_ip4': None, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': 62, 'vc_position': 1, 'vc_priority': None, 'config_template': None, 'custom_fields': {'TG_Group': 3, 'Connection_Scheme': 'ssh'}, 'tags': []}, 'postchange': {'created': '2024-06-13T09:29:46.119Z', 'last_updated': '2024-06-13T09:29:49.660Z', 'description': '', 'comments': '', 'local_context_data': None, 'device_type': 9, 'device_role': 1, 'tenant': 4, 'platform': 3, 'name': '2k-asw-9-56-1-0.1', 'serial': '', 'asset_tag': None, 'site': 14, 'location': None, 'rack': None, 'position': None, 'face': '', 'status': 'active', 'airflow': '', 'primary_ip4': None, 'primary_ip6': None, 'cluster': None, 'virtual_chassis': 62, 'vc_position': 1, 'vc_priority': None, 'config_template': None, 'custom_fields': {'TG_Group': 3, 'Connection_Scheme': 'ssh', 'Name_of_Establishment': '2k'}, 'tags': []}}}
-
-#if __name__ == "__main__":
- #   data_my = {"data_type": "netbox_main", "data": my_wh}
- #   call = Handler_WebHook()
- #   result = call.core_handler(**data_my)
- #   print(result)
 

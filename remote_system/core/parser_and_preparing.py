@@ -1,7 +1,7 @@
 
 
 
-from .my_env import my_path_sys
+from my_env import my_path_sys
 import sys
 
 sys.path.append(my_path_sys)
@@ -141,11 +141,15 @@ class BaseDeviceDataGet:
                 return None
         return dictionary
 
-    def get_only_name(self):
+    def get_id(self):
         """
         Method to get only name of the device ecpessially for delete event.
         """
-        return {'name':(self.safe_get(self.data, 'name'))}
+        localid = GetHost()
+        host_id_remote = self.safe_get(self.data, 'id')
+        name = self.safe_get(self.data, 'name')
+        host_id_local = localid.get_local_id(**{"host_name": name, "host_id_remote": str(host_id_remote)})
+        return {'name':name,"host_id_local":host_id_local}
 
     def get_device_data(self):
         """

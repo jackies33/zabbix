@@ -24,7 +24,7 @@ class Remover_Hosts(BaseDeviceDataGet):
         Method for delete device(host) in zabbix1
         """
         try:
-            data = self.get_only_name()
+            data = self.get_id()
             host_id = data['host_id_local']
             result = self.zapi.host.delete(host_id)
             return [True,result]
