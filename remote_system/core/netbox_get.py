@@ -40,36 +40,39 @@ class NetboxGet():
 
         def process_device(device):
             try:
-                primary_ip = device.primary_ip
-                if primary_ip is None:
-                    return None
-                primary_ip = str(primary_ip).split('/')[0]
-                custom_filed = dict(device.custom_fields)
-                tg_resource_group_dict = device.custom_fields.get("TG_Group")
-                map_resource_group_dict = device.custom_fields.get("MAP_Group")
-                name_of_establishmnet = device.custom_fields.get('Name_of_Establishment')
-                tg_resource_group = tg_resource_group_dict.get("name") if tg_resource_group_dict else None
-                map_resource_group = map_resource_group_dict.get("name") if map_resource_group_dict else None
-                device_role = device.device_role
-                device_type = device.device_type
-                manufacturer = device_type.manufacturer.name
-                classification = CLASSIFIER(device_type, device_role, custom_filed)
-                site = device.site.id
-                site = self.nb.dcim.sites.get(id=site)
-                my_address = str(site.physical_address)
-                if name_of_establishmnet:
-                    my_address = f'{my_address}\n({name_of_establishmnet})'
-                vc_enable = device.virtual_chassis
                 host_name = device.name
-                sn = device.serial
-                return {
-                    'host_name': str(host_name), 'host_status': str(device.status), 'site': site,
-                    'host_id_remote': str(device.id), 'tenant': str(device.tenant), 'manufacturer': str(manufacturer),
-                    'device_role': str(device_role), 'tg_resource_group': tg_resource_group,
-                    'platform': str(device.platform), 'map_resource_group': map_resource_group,
-                    'device_type': str(device_type), 'my_address': my_address, 'ip_address': primary_ip, 'sn': sn,
-                    'custom_fields': custom_filed,
-                }
+                if "wap" in str(host_name):
+                    return None
+                else:
+                    primary_ip = device.primary_ip
+                    if primary_ip is None:
+                        return None
+                    primary_ip = str(primary_ip).split('/')[0]
+                    custom_filed = dict(device.custom_fields)
+                    tg_resource_group_dict = device.custom_fields.get("TG_Group")
+                    map_resource_group_dict = device.custom_fields.get("MAP_Group")
+                    name_of_establishmnet = device.custom_fields.get('Name_of_Establishment')
+                    tg_resource_group = tg_resource_group_dict.get("name") if tg_resource_group_dict else None
+                    map_resource_group = map_resource_group_dict.get("name") if map_resource_group_dict else None
+                    device_role = device.device_role
+                    device_type = device.device_type
+                    manufacturer = device_type.manufacturer.name
+                    classification = CLASSIFIER(device_type, device_role, custom_filed)
+                    site = device.site.id
+                    site = self.nb.dcim.sites.get(id=site)
+                    my_address = str(site.physical_address)
+                    if name_of_establishmnet:
+                        my_address = f'{my_address}\n({name_of_establishmnet})'
+                    vc_enable = device.virtual_chassis
+                    sn = device.serial
+                    return {
+                        'host_name': str(host_name), 'host_status': str(device.status), 'site': site,
+                        'host_id_remote': str(device.id), 'tenant': str(device.tenant), 'manufacturer': str(manufacturer),
+                        'device_role': str(device_role), 'tg_resource_group': tg_resource_group,
+                        'platform': str(device.platform), 'map_resource_group': map_resource_group,
+                        'device_type': str(device_type), 'my_address': my_address, 'ip_address': primary_ip, 'sn': sn,
+                        'custom_fields': custom_filed,
+                    }
             except ValueError as e:
                 print(f"\n\n{e}\n\nfailed extract ManagedObject!!!\n\n")
                 return None

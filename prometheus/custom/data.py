@@ -143,6 +143,13 @@ hosts_ports_tcp = [
     ('10.50.164.4', 8888, 'tcp', 'sdc01-net-aaa-k8s-worker02', 'OpenWisp'),
     ('10.50.164.8', 5000, 'tcp', 'sdc01-net-aaa-registry01', 'DockerRegistry'),
 
+    #AlarmManagment
+    ('10.50.174.37', 8055, 'tcp', 'kr01-zbx-proxy01', 'zbx_alarm_logic'),
+    ('10.50.164.37', 8055, 'tcp', 'sdc-zbx-proxy02', 'zbx_alarm_logic'),
+    ('10.50.174.37', 8056, 'tcp', 'kr01-zbx-proxy01', 'zbx_sender'),
+    ('10.50.164.37', 8056, 'tcp', 'sdc-zbx-proxy02', 'zbx_sender'),
+    ('10.50.174.37', 8057, 'tcp', 'kr01-zbx-proxy01', 'zbx_deleter_short_alarms'),
+    ('10.50.164.37', 8057, 'tcp', 'sdc-zbx-proxy02', 'zbx_deleter_short_alarms'),
 
     #prometheus services
     ('10.50.174.36', 9090, 'tcp', 'kr01-zbx-grafana01', 'prometheus'),

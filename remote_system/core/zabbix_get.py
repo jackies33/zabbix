@@ -308,26 +308,55 @@ class GetTemplate():
     class for getting different information about templates server from zabbix1 api
     """
 
-    def __init__(self, group_name):
+    def __init__(self, group_name,device_role):
         self.zapi = zabbix_api_instance.get_instance()
         self.group_name = group_name
+        self.device_role = device_role
 
+    """
+    def clone_template(self, source_template_name):
+        try:
+            source_template = self.zapi.template.get(filter={'name': source_template_name}, output='extend',
+                                                     selectGroups='extend')
+
+            if not source_template:
+                print(f"Source template '{source_template_name}' not found.")
+                return None
+
+            source_template_id = source_template[0]['templateid']
+            #groups = source_template[0]['groups']
+            return source_template_id
+        except Exception as err:
+            return None
+    """
     def classifier_template(self, *args):
         Mapp = GetMappings()
         for group, template_name in Mapp.group_template_mapping.items():
             if group in self.group_name:
-                template_id = self.get_template(**{"template_name": template_name})
+                template_name_proper = f"{template_name} {self.device_role}"
+                template_id = self.get_template(**{"template_name": template_name_proper, "source_template_name":self.group_name})
                 return template_id
 
 
     def get_template(self, **kwargs):
         try:
-                template_id = self.zapi.template.get(filter = {'name':kwargs["template_name"]})[0]['templateid']
+                template_id = self.zapi.template.get(filter={'name':kwargs["template_name"]})[0]['templateid']
                 return template_id
         except Exception as e:
                 print(f'Error: {e}')
-                return e
+                template_id = self.create_and_get_template(kwargs["template_name"])
+                return template_id
 
+
+    def create_and_get_template(self, template_name):
+        try:
+            self.zapi.template.create(host=template_name,groups=[{'groupid':'9'}])
+            time.sleep(3)
+            temnplate_id = self.zapi.template.get(filter={'name': template_name})[0]['templateid']
+            return temnplate_id
+        except Exception as e:
+            print(f'Error: {e}')
+            return e
 
 
 
