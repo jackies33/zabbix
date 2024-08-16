@@ -46,15 +46,21 @@ class Parser_Json():
             target = file_json['model']
             data = file_json['data']
             host_name = data['name']
+            if "wap" in str(host_name):
+                return [False, "Miss devices, because without monitoring aim"]
             if event == "updated":
                 find_delete = self.find_out_deleted_updates(**file_json)
                 if find_delete == True:
                     event = "update_before_delete"
+            elif "wifi_ap" in host_name:
+                event = "missed_device"
             result = {
                 'host_name': host_name, 'event': event,
                 'target': target,
             }
+
             return [True, result]
+
         except Exception as e:
             print(f"Error in parser web_hook - {e}")
             return [False, e]
@@ -74,7 +80,7 @@ class Parser_Json():
     def compare_exporter(self,**data):# check differences between remote and local extracted data
         devices_remote = data["devices_remote"]
         devices_local = data["devices_local"]
-        exclude_keys = ['site', 'tenant','custom_fields','manufacturer']
+        exclude_keys = ['manufacturer']
         delete_list = []
         update_list = []
         create_list = []
@@ -163,6 +169,7 @@ class BaseDeviceDataGet:
         device_role = self.safe_get(self.data, 'device_role', 'name')
         ip_address = (self.safe_get(self.data, 'primary_ip4', 'address'))
         host_status = self.safe_get(self.data, 'status', 'label')
+        tenant = self.safe_get(self.data, 'tenant')
         if host_status == "Active":
             host_status = "0"
         elif host_status == "Offline":
@@ -198,10 +205,10 @@ class BaseDeviceDataGet:
         group_id = group_name.get_group()
         localid = GetHost()
         host_id_local = localid.get_local_id(**{"host_name":name,"host_id_remote":str(host_id_remote)})
-        templating = GetTemplate(group)
+        templating = GetTemplate(group,device_role)
         template_id = templating.classifier_template()
-        proxy = GetProxy()
-        proxy_id = proxy.get_proxy_next_choise()
+        #proxy = GetProxy()
+        #proxy_id = proxy.get_proxy_next_choise()
         call = CLASSIFIER()
         snmp_comm = call.classifier_snmp_comm \
             (**{"device_type": device_type, "device_role": device_role, "custom_filed": custom_fields})
@@ -220,9 +227,10 @@ class BaseDeviceDataGet:
             "group": group,
             "group_id": group_id,
             "template_id": template_id,
-            "proxy_id": proxy_id,
+            #"proxy_id": proxy_id,
             "snmp_comm": snmp_comm,
             "phys_address": phys_address,
+            "tenant": tenant,
             "vc": vc,
             "host_status": host_status
         }
@@ -240,6 +248,7 @@ class BaseDeviceDataGet:
         ip_address = self.safe_get(self.data, 'ip_address')
         host_id_remote = self.safe_get(self.data, 'host_id_remote')
         host_status = self.safe_get(self.data, 'host_status')
+        tenant = self.safe_get(self.data, 'tenant')
         if host_status == "Active":
             host_status = "0"
         elif host_status == "Offline":
@@ -269,7 +278,7 @@ class BaseDeviceDataGet:
         group_id = group_name.get_group()
         localid = GetHost()
         host_id_local = localid.get_local_id(**{"host_name": name, "host_id_remote": str(host_id_remote)})
-        templating = GetTemplate(group)
+        templating = GetTemplate(group,device_role)
         template_id = templating.classifier_template()
         proxy = GetProxy()
         proxy_id = proxy.get_proxy_next_choise()
@@ -294,6 +303,7 @@ class BaseDeviceDataGet:
             "proxy_id": proxy_id,
             "snmp_comm": snmp_comm,
             "phys_address": phys_address,
+            "tenant": tenant,
             "vc": vc,
             "host_status": host_status,
         }

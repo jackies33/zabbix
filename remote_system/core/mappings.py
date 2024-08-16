@@ -29,8 +29,10 @@ class GetMappings():
         'name': 'name',
         'device_type': 'device_type',
         'status': 'status',
+        'tenant': 'tenant',
     }
 
+    """
     group_template_mapping = {
         'Huawei Technologies Co./Huawei.VRP': 'Huawei VRP by SNMP',
         'Juniper Networks/Juniper.JUNOS': 'Juniper Main',
@@ -48,6 +50,26 @@ class GetMappings():
         "OS.Linux": "Linux by SNMP",
         "Qtech/Qtech.QSW": "QTech QSW by SNMP",
     }
+    """
+
+    group_template_mapping = {
+        'Huawei Technologies Co./Huawei.VRP': 'Huawei VRP',
+        'Juniper Networks/Juniper.JUNOS': 'Juniper',
+        'MikroTik/MikroTik.RouterOS': 'Mikrotik',
+        'Hewlett Packard Enterprise/Aruba.ArubaOS': 'Linux',
+        'Hewlett Packard Enterprise/Aruba.ArubaOS/AP 345': 'Aruba AP',
+        'T8/Atlas.OS/': "Atlas.OS",
+        'Cisco Systems/Cisco.ASA': "Cisco ASAv",
+        'Cisco Systems/Cisco.IOS': "Cisco IOS",
+        'Cisco Systems/Cisco.IOSXR': "Cisco IOSXR",
+        'Cisco Systems/Cisco.NXOS': "Cisco NXOS",
+        'Fortinet/Fortinet.Fortigate': "FortiGate",
+        "Hewlett Packard Enterprise/HP.ProCurve9xxx": "HP Enterprise Switch",
+        "LENOVO/IBM.NOS": "IBM",
+        "OS.Linux": "Linux",
+        "Qtech/Qtech.QSW": "QTech QSW",
+    }
+
 
     def name(self,data):
         try:
@@ -138,6 +160,28 @@ class GetMappings():
                     tag_exists = True
             if not tag_exists:
                 current_tags.append({'tag': 'device_role', 'value': data['device_role']})
+            self.zapi.host.update(hostid=host_id, tags=current_tags, templates= [{'templateid': data['template_id']}])
+            host_info = self.zapi.host.get(hostids=host_id, selectTags='extend')
+            result = host_info[0].get('tags', [])
+            return result
+        except ZabbixAPIException as err:
+            return err
+        except Exception as err:
+            return err
+
+    def tenant(self,data):
+        try:
+            host_id = data['host_id_local']
+            host = self.zapi.host.get(hostids=host_id, selectTags="extend")[0]
+            current_tags = host.get('tags', [])
+            tag_exists = False
+            for tag in current_tags:
+                tag.pop('automatic', None)
+                if tag['tag'] == 'tenant':
+                    tag['value'] = data['tenant']
+                    tag_exists = True
+            if not tag_exists:
+                current_tags.append({'tag': 'tenant', 'value': data['tenant']})
             self.zapi.host.update(hostid=host_id, tags=current_tags)
             host_info = self.zapi.host.get(hostids=host_id, selectTags='extend')
             result = host_info[0].get('tags', [])

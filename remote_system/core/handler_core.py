@@ -68,8 +68,8 @@ class Handler_WebHook():
                                     f'ZABBIX.handler[ "Event_Update Device" ]\n Device Name - '
                                     f'[ "{host_name}" ] \n Time: [ "{datetime.datetime.now()}" ]'
                                 )
-                                #sender = tg_bot(tg_message)
-                                #sender.tg_sender()
+                                sender = tg_bot(tg_message)
+                                sender.tg_sender()
                             return result
                             #return [changes,parse_data,"updated"]
                             #print("update")
@@ -82,13 +82,14 @@ class Handler_WebHook():
                                     f'ZABBIX.handler[ "Event_Create Device" ]\n Device Name - '
                                     f'[ "{host_name}" ] \n Time: [ "{datetime.datetime.now()}" ]'
                                 )
-                                #sender = tg_bot(tg_message)
-                                #sender.tg_sender()
+                                sender = tg_bot(tg_message)
+                                sender.tg_sender()
                             return result
                         elif event == "update_before_delete":
                             return ["skip update because before delete"]
                             #print("skip update because before delete")
-
+                        elif event == "missed_device":
+                            return ["skip update because before delete"]
                         else:
 
                             tg_massage = f"it was a problem with web_hook from netbox, " \

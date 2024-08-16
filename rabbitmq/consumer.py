@@ -31,7 +31,7 @@ logger.addHandler(file_handler)
 #logger.addHandler(stream_handler)
 
 
-def callback(ch, method, properties, body):
+def process_message(body):
     data_for_sent = json.loads(body.decode())
     data = {"data_type": "netbox_main", "data": data_for_sent}
     call = Handler_WebHook()
@@ -46,7 +46,14 @@ def callback(ch, method, properties, body):
         #print(err)
     #print(f"Received message: {body.decode()}")
 
+
+def on_message_callback(ch, method, properties, body):
+    process_message(body)
+    ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
 def consume_from_rabbitmq(queue_name):
+    """
     try:
         #print("trying to recieve a meassage from RabbitMQ...")
         credentials = pika.PlainCredentials(rbq_producer_login, rbq_producer_pass)
@@ -66,6 +73,21 @@ def consume_from_rabbitmq(queue_name):
     except pika.exceptions.AMQPConnectionError:
         logger.debug(f"\nConnection to RabbitMQ failed, retrying...\n")
         #print("Connection to RabbitMQ failed, retrying...")
+    """
+    try:
+        credentials = pika.PlainCredentials(rbq_producer_login, rbq_producer_pass)
+        connection = pika.BlockingConnection(pika.ConnectionParameters(
+            host=rabbitmq_host,
+            credentials=credentials
+        ))
+        channel = connection.channel()
+        channel.basic_consume(queue=queue_name, on_message_callback=on_message_callback, auto_ack=False)
+        print(f"Start listening: {queue_name}")
+        channel.start_consuming()
+
+    except Exception as e:
+        print(f"Error connecting to RabbitMQ {queue_name}: {e}")
+
 
 #if __name__ == "__main__":
 #    while True:

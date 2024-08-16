@@ -52,10 +52,10 @@ class Creator_Hosts(BaseDeviceDataGet):
                     'details': {
                             'version': 2,
                             'community': data["snmp_comm"],
-                            'bulk': '0',
+                            #'bulk': '1', #for enable bulk requests
                     }
                 }],
-                proxy_hostid=str(data["proxy_id"]),
+                #proxy_hostid=str(data["proxy_id"]),
                 groups=[{'groupid': int(data["group_id"])}],
                 templates=[{'templateid': int(data["template_id"])}],
                 status=data["host_status"]
@@ -67,13 +67,17 @@ class Creator_Hosts(BaseDeviceDataGet):
             self.zapi.host.update({'hostid': host_id,'inventory': {'location': data["phys_address"]}})
             self.zapi.host.update(hostid=host_id, tags=[
                                                         {'tag': "device_role", 'value': data['device_role']},
-                                                        {'tag': "remote_id", 'value': data['host_id_remote']},]
+                                                        {'tag': "remote_id", 'value': data['host_id_remote']},
+                                                        {'tag': "tenant", 'value': data['tenant']},
+                                    ]
                                   )
             created_host = self.zapi.host.get(filter={"name": data["name"]})
             #self.logger.debug(f"\n\nHost creation successful2: {created_host}\n\n")
             return [True,created_host]
         except ZabbixAPIException as err:
             return [False,err]
+        except TypeError as err:
+            return [False, err]
 
 
     def create_host_full(self):
@@ -94,10 +98,10 @@ class Creator_Hosts(BaseDeviceDataGet):
                     'details': {
                             'version': 2,
                             'community': data["snmp_comm"],
-                            'bulk': '0',
+                            #'bulk': '0', #for disable bulk requests
                     }
                 }],
-                proxy_hostid=str(data["proxy_id"]),
+                #proxy_hostid=str(data["proxy_id"]),
                 groups=[{'groupid': int(data["group_id"])}],
                 templates=[{'templateid': int(data["template_id"])}],
                 status=data["host_status"]
@@ -115,7 +119,50 @@ class Creator_Hosts(BaseDeviceDataGet):
             created_host = self.zapi.host.get(filter={"name": data["name"]})
             return [True,created_host]
         except ZabbixAPIException as err:
-            return [False,err]
+            try:
+                self.zapi.host.create(
+                    host=data["name"](),
+                    interfaces=[{
+                        'type': 2,
+                        'main': 1,
+                        'useip': 1,
+                        'ip': data["ip_address"],
+                        'dns': '',
+                        'port': "161",
+                        'details': {
+                            'version': 2,
+                            'community': data["snmp_comm"],
+                            #'bulk': '0', #for disable bulk requests
+                        }
+                    }],
+                    # proxy_hostid=str(data["proxy_id"]),
+                    groups=[{'groupid': int(data["group_id"])}],
+                    templates=[{'templateid': int(data["template_id"])}],
+                    status=data["host_status"]
+                )
+                time.sleep(2)
+                host_id = self.zapi.host.get(filter={'host': data['name']})[0]['hostid']
+                self.zapi.host.update({'hostid': host_id, 'inventory_mode': 0})
+                self.zapi.host.update({'hostid': host_id, 'inventory': {'location': data["phys_address"]}})
+                self.zapi.host.update({'hostid': host_id, 'inventory': {'serialno_a': data['serial']}})
+                tags_1 = [{'tag': "device_role", 'value': data['device_role']},
+                          {'tag': "remote_id", 'value': data['host_id_remote']},
+                          {'tag': "tenant", 'value': data['tenant']},
+                          ]
+                custom_dict = data['custom_fields']
+                tags = [
+                    {'tag': key, 'value': value['name']} if isinstance(value, dict) and 'name' in value else {'tag': key,
+                                                                                                              'value': str(
+                                                                                                                  value)}
+                    for key, value in custom_dict.items()]
+                full_tags = tags_1 + tags
+                self.zapi.host.update(hostid=host_id, tags=full_tags)
+                created_host = self.zapi.host.get(filter={"name": data["name"]})
+                return [True, created_host]
+            except ZabbixAPIException as err:
+                return [False,err]
+            except TypeError as err:
+                return [False, err]
 
 
 
