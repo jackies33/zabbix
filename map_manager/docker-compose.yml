@@ -1,0 +1,14 @@
+
+version: '3.8'
+
+services:
+  zbx_map_manager:
+    build: .
+    container_name: zbx_map_manager
+    networks:
+      - app-network
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge

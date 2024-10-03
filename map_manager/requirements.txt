@@ -1,0 +1,7 @@
+
+pytz
+requests
+pyzabbix
+pynetbox
+urllib3
+

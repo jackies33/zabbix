@@ -11,7 +11,7 @@ _______________________________
 Description=Listen and classifier web hooks from netbox App through RabbitMQ
 
 [Service]
-ExecStart=/usr/bin/python3 /opt/zabbix_custom/rabbitmq/main.py
+ExecStart=/usr/bin/python3 /opt/zabbix_custom/rabbitmq/discovery.py
 StandardOutput=file:/var/log/rabbitmq/output_sys.log
 StandardError=file:/var/log/rabbitmq/error.log
 Restart=always

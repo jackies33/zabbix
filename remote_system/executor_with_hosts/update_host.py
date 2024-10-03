@@ -3,7 +3,7 @@
 
 import sys
 import time
-from pyzabbix import ZabbixAPIException
+import logging
 
 #sys.path.append('/opt/zabbix1')
 sys.path.append('/opt/zabbix_custom/')
@@ -15,6 +15,14 @@ from remote_system.core.zabbix_get import GetHost
 from remote_system.core.netbox_get import NetboxGet
 from remote_system.executor_with_hosts.create_host import Creator_Hosts
 
+
+
+message_logger2 = logging.getLogger('update_flow')
+message_logger2.setLevel(logging.INFO)
+file_handler = logging.FileHandler('/var/log/zabbix_custom/remote_system/update_host_flow.log')
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+file_handler.setFormatter(formatter)
+message_logger2.addHandler(file_handler)
 
 
 class Updater_Hosts(BaseDeviceDataGet):
@@ -60,31 +68,26 @@ class Updater_Hosts(BaseDeviceDataGet):
             print(f'Error: {e}')
             return [False, e]
 
-
     def update_vc(self):
         """
         Method for update device(host) in zabbix1 by data from vc model
         """
         try:
-            data = self.get_vc_data()
-            time.sleep(35)
+            # data = self.get_vc_data()
+            time.sleep(40)
             get_zbx = GetHost()
-            hosts_delete = get_zbx.get_vc_hosts(**data)
-            if hosts_delete == None:
+            hosts_delete = get_zbx.get_vc_hosts(**self.data)
+            get_nb = NetboxGet()
+            data_nb_for_vc = get_nb.get_device_vc(**self.data)
+            message_logger2.info(f"DATA for VC UPDATE : {data_nb_for_vc}")
+            if data_nb_for_vc == False:
                 return False
             else:
-                get_nb = NetboxGet()
-                data_nb = get_nb.get_device_vc(**data)
-                if data_nb == False:
-                    return False
-                else:
-                    create = Creator_Hosts({"data":data_nb})
-                    result = create.create_host_full()
-                    return result
+                create = Creator_Hosts({"data": data_nb_for_vc})
+                result = create.create_host_full()
+                message_logger2.info(f"RESULT for VC UPDATE : {data_nb_for_vc}")
+                return result
         except Exception as e:
             print(f'Error: {e}')
             return [False, e]
-
-
-
 

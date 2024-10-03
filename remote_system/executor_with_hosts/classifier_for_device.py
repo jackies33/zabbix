@@ -20,8 +20,8 @@ class CLASSIFIER():
         def classifier_snmp_comm(self,**kwargs):
             device_type = kwargs["device_type"]
             device_role = kwargs["device_role"]
-            if device_type == "NE20E-S2F" and device_role == "p/pe" or \
-                    device_type == "NetEngine 8000 F1A-8H20Q" and device_role == "p/pe" or \
+            if device_type == "NE20E-S2F" and device_role == "p-pe" or \
+                    device_type == "NetEngine 8000 F1A-8H20Q" and device_role == "p-pe" or \
                     device_type == "S5700-28C-EI-24S" and device_role == "m-dsw"  or \
                     device_type == "S5735-S48S4X" and device_role == "m-dsw" :
                 snmp_comm = "nocpr0ject"
