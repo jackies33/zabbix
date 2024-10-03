@@ -1,25 +1,23 @@
 
 
-from netmiko import ConnectHandler
+
+
 import re
-
-
-
-
+import time
+import paramiko
 import os
 import sys
 
 #sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-sys.path.append('/app/')
+#sys.path.append('/app/')
 #current_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(os.path.join(current_dir, '..', '..'))
 
-
-from map_manager.device_types.connect_prep import CONNECT_PREPARE
-
+from ..my_env import mylogin , mypass
 
 
-class QTECH_CONN():
+
+class FORTINET_CONN():
 
             """
             Class for connection to different device
@@ -29,20 +27,11 @@ class QTECH_CONN():
                 """
                 Initialize the values
                 """
-
-                self.pattern_qtech = re.compile(r'''
-                                                ^(?P<remote_sysname>\S+)       
-                                                \s+(?P<local_iface>Hu[^\s]+|TF[^\s]+|Mg[^\s]+)   
-                                                \s+(?P<remote_iface>\S+)   
+                self.pattern_forti = re.compile(r'''
+                                                ^\d+\s+port\s+(?P<local_iface>'\S+')     
+                                                .+port\s+(?P<remote_iface>'\S+')
+                                                \s+system\s+(?P<remote_sysname>'\S+')
                                             ''', re.VERBOSE | re.MULTILINE)
-
-                self.mac_regex = re.compile(r'''
-                                                (?:[0-9A-Fa-f]{2}[:-]){5}  
-                                                [0-9A-Fa-f]{2}             
-                                                |                         
-                                                (?:[0-9A-Fa-f]{4}\.){2}   
-                                                [0-9A-Fa-f]{4}        
-                                            ''', re.VERBOSE)
                 self.scale_ids_with_names_for_ibm = [{"snmp_id": 129, "port_name": "INTA1", "port_id": 1},
                                                      {"snmp_id": 130, "port_name": "INTA2", "port_id": 2},
                                                      {"snmp_id": 131, "port_name": "INTA3", "port_id": 3},
@@ -90,64 +79,82 @@ class QTECH_CONN():
                     iface = iface.replace("Fa", "FastEthernet")
                 elif re.match(r"Eth\d+", iface):
                     iface = iface.replace("Eth", "Ethernet")
-                if re.match(r"\S+:\d+", iface):
-                    iface = iface.split(":")[0]
                 return iface
 
-
-            def conn_qtech(self, **kwargs):
-                print("<<< Start qtech.py >>>")
-                host_name = kwargs['name']
+            def conn_FortiGate_diagnose_lldprx(self, **kwargs):
                 try:
+                    print("<<< Start fortinet.py >>>")
                     my_lldp = []
+                    group_name = kwargs['groups'][0]['name']
                     ip_conn = kwargs['interfaces'][0]['ip']
-                    type_device_for_conn = 'cisco_ios'
-                    dict_for_template = {'ip_conn': ip_conn, 'type_device_for_conn': type_device_for_conn,
-                                         'conn_scheme': '2'}
-                    template = CONNECT_PREPARE()
-                    host1 = template.template_conn(**dict_for_template)
-                    with ConnectHandler(**host1) as net_connect:
-                        output_main = net_connect.send_command('show lldp neighbors', delay_factor=.5)
-                        matches = self.pattern_qtech.finditer(output_main)
-                        for match in matches:
-                            remote_sysname = match.group('remote_sysname').strip()
-                            if remote_sysname != None:
-                                if "\n" in remote_sysname:
-                                    remote_sysname = remote_sysname.split("\n")[1]
-                                if str(remote_sysname).endswith('.tech.mosreg.ru'):
-                                    remote_sysname = remote_sysname.replace('.tech.mosreg.ru', '')
-                                elif str(remote_sysname).endswith('.tech.mosreg.r'):
-                                    remote_sysname = remote_sysname.replace('.tech.mosreg.r', '')
-                            local_iface = match.group('local_iface')
-                            if local_iface != None:
-                                local_iface = self.iface_correcting(local_iface)
-                            remote_iface = match.group('remote_iface')
-                            if remote_iface != None:
-                                remote_iface = self.iface_correcting(remote_iface)
-                            if remote_iface.isdigit() and len(remote_iface) in [1, 2]:
-                                for id in self.scale_ids_with_names_for_ibm:
-                                    if str(id["port_id"]) == remote_iface:
-                                        try:
-                                            remote_iface = str(id["port_name"])
-                                        except Exception as err:
-                                            pass
-                            if local_iface != None and remote_iface != None and remote_sysname != None and not self.mac_regex.match(
-                                    remote_iface):
-                                my_lldp.append({local_iface: {"remote_iface": remote_iface, "remote_hostname": remote_sysname}})
-
+                    host_name = kwargs['name']
+                    cmnd1_1for2500 = '\n config vdom \n\n      '  # Commands
+                    cmnd1_2for2500 = '\n edit root \n\n      '  # Commands
+                    cmnd1_1for6500 = '\n config global \n\n      '  # Commands
+                    cmnd2 = '\n diagnose lldprx neighbor  \n\n           '  # Commands
+                    ssh = paramiko.SSHClient()
+                    ssh.load_system_host_keys()
+                    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                    ssh.connect(ip_conn,
+                                username=mylogin,
+                                password=mypass,
+                                look_for_keys=False)
+                    ssh1 = ssh.invoke_shell()
+                    time.sleep(1)
+                    if group_name == "Fortinet/Fortinet.Fortigate/FortiGate-6501F":
+                        ssh1.send(cmnd1_1for6500)
+                        time.sleep(1)
+                        ssh1.send(cmnd2)
+                        time.sleep(1)
+                        time.sleep(1)
+                    elif group_name == "Fortinet/Fortinet.Fortigate/FortiGate-2500E":
+                        ssh1.send(cmnd1_1for2500)
+                        time.sleep(1)
+                        ssh1.send(cmnd1_2for2500)
+                        time.sleep(1)
+                        ssh1.send(cmnd2)
+                        time.sleep(1)
+                        time.sleep(1)
+                    else:
+                        return [False, "NOT proper group of hosts", host_name]
+                    output1 = (ssh1.recv(9999999).decode("utf-8"))
+                    matches = self.pattern_forti.finditer(output1)
+                    for match in matches:
+                        local_iface = match.group('local_iface')
+                        if local_iface != None:
+                            local_iface = local_iface.replace("'", "")
+                        remote_iface = match.group('remote_iface')
+                        if remote_iface != None:
+                            remote_iface = self.iface_correcting(remote_iface.replace("'", ""))
+                        if remote_iface.isdigit() and len(remote_iface) in [1, 2]:
+                            for id in self.scale_ids_with_names_for_ibm:
+                                if str(id["port_id"]) == remote_iface:
+                                    try:
+                                        remote_iface = str(id["port_name"])
+                                    except Exception as err:
+                                        pass
+                        remote_sysname = match.group('remote_sysname')
+                        if remote_sysname != None:
+                            remote_sysname = remote_sysname.replace("'", "")
+                            if str(remote_sysname).endswith('.tech.mosreg.ru'):
+                                remote_sysname = remote_sysname.replace('.tech.mosreg.ru', '')
+                        if local_iface != None and remote_iface != None and remote_sysname != None:
+                            my_lldp.append({local_iface: {"remote_iface": remote_iface, "remote_hostname": remote_sysname}})
                     lldp_dict = {"local_hostname": host_name, "lldp_list": my_lldp, "zbx_data": kwargs}
-                    net_connect.disconnect()
                     return [True, lldp_dict]
-
                 except Exception as err:
                     print(err)
                     return [False, None, host_name]
 
 
 
+            def FortiNet_start(self,**kwargs):
+                group_name = kwargs['groups'][0]['name']
+                if group_name == "Fortinet/Fortinet.Fortigate/FortiGate-6501F" \
+                        or group_name == "Fortinet/Fortinet.Fortigate/FortiGate-2500E":
+                    result = self.conn_FortiGate_diagnose_lldprx(**kwargs)
+                    return result
+                else:
+                    return [False, None, kwargs['name']]
+                #elif group_name == "Fortinet/Fortinet.Fortigate/FortiGate-2500E":
 
-#if __name__ == "__main__":
-#    connecting = QTECH_CONN()
-#    my_dict = {'local_hostname': 'kr02-leaf02',  'interfaces': [{'ip': '10.50.76.159'}], "name":'kr02-leaf02'}
-#    result = connecting.conn_qtech(**my_dict)
-#    print(result)

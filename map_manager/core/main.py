@@ -92,18 +92,18 @@ import os
 import sys
 
 #sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-sys.path.append('/app/')
+#sys.path.append('/app/')
 #current_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(os.path.join(current_dir, '..', '..'))
 
-print("Начало выполнения импортов")
-from map_manager.core.discovery import START_DISCOVERY
-from map_manager.core.get_data import GetData
-from map_manager.core.tg_bot import telega_bot
+
+from discovery import START_DISCOVERY
+from get_data import GetData
+from tg_bot import telega_bot
 
 i = 0
 
-print("Импорты выполнены")
+
 
 
 def start_job():

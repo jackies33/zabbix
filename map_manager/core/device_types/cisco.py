@@ -3,15 +3,14 @@
 
 from netmiko import ConnectHandler
 import re
-import os
 import sys
 
 #sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-sys.path.append('/app/')
+#sys.path.append('/app/')
 #current_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(os.path.join(current_dir, '..', '..'))
 
-from map_manager.device_types.connect_prep import CONNECT_PREPARE
+from connect_prep import CONNECT_PREPARE
 
 
 class CISCO_CONN():

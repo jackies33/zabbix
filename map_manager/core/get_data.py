@@ -4,11 +4,11 @@
 import os
 import sys
 #sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-current_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(current_dir, '..', '..'))
+#current_dir = os.path.dirname(os.path.abspath(__file__))
+#sys.path.append(os.path.join(current_dir, '..', '..'))
 
-from map_manager.core.zabbix_get import GetHost
-from map_manager.core.netbox_get import GetNBData
+from zabbix_get import GetHost
+from netbox_get import GetNBData
 
 
 class GetData():
