@@ -61,6 +61,7 @@ class GetMappings():
         'T8/Atlas.OS/': "Atlas.OS",
         'Cisco Systems/Cisco.ASA': "Cisco ASAv",
         'Cisco Systems/Cisco.IOS': "Cisco IOS",
+        'Cisco Systems/Cisco.IOSXE': "Cisco IOSXE",
         'Cisco Systems/Cisco.IOSXR': "Cisco IOSXR",
         'Cisco Systems/Cisco.NXOS': "Cisco NXOS",
         'Fortinet/Fortinet.Fortigate': "FortiGate",

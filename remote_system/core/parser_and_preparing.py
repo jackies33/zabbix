@@ -3,6 +3,7 @@
 
 from my_env import my_path_sys
 import sys
+import re
 
 sys.path.append(my_path_sys)
 
@@ -137,6 +138,7 @@ class BaseDeviceDataGet:
     def __init__(self, data_ext):
         self.data_ext = data_ext
         self.data = self.data_ext.get("data", {})
+        self.pattern_clear_host_name_sw = re.compile(r'\.\d+$')
 
     def safe_get(self, dictionary, *keys):
 
@@ -170,6 +172,8 @@ class BaseDeviceDataGet:
         ip_address = (self.safe_get(self.data, 'primary_ip4', 'address'))
         host_status = self.safe_get(self.data, 'status', 'label')
         tenant = self.safe_get(self.data, 'tenant')
+        if isinstance(tenant, dict):
+            tenant = tenant['name']
         if host_status == "Active":
             host_status = "0"
         elif host_status == "Offline":
@@ -178,6 +182,15 @@ class BaseDeviceDataGet:
             host_status = "0"
         if ip_address:
             ip_address = ip_address.split("/")[0]
+
+        host_name_for_clear = str(name)
+        if "kr01-mng" not in host_name_for_clear and "kr02-mng" not in host_name_for_clear:
+            cleaned_hostname = self.pattern_clear_host_name_sw.sub('', host_name_for_clear)
+        else:
+            cleaned_hostname = host_name_for_clear
+        if str(cleaned_hostname).endswith('.tech.mosreg.ru'):
+            cleaned_hostname = cleaned_hostname.replace('.tech.mosreg.ru', '')
+
         custom_fields = self.safe_get(self.data, 'custom_fields')
         serial = self.safe_get(self.data, 'serial')
         netboxget = NetboxGet()
@@ -214,7 +227,7 @@ class BaseDeviceDataGet:
             (**{"device_type": device_type, "device_role": device_role, "custom_filed": custom_fields})
 
         device_data = {
-            "name": name,
+            "name": cleaned_hostname,
             "device_type": device_type,
             "host_id_remote": str(host_id_remote),
             "host_id_local": str(host_id_local),
@@ -240,6 +253,7 @@ class BaseDeviceDataGet:
         """
         Method for preapre information about device from Netbox for full create
         """
+        print(self.data)
         name = self.safe_get(self.data, 'host_name')
         device_type = self.safe_get(self.data, 'device_type')
         manufacturer = self.safe_get(self.data, 'manufacturer')
@@ -249,6 +263,9 @@ class BaseDeviceDataGet:
         host_id_remote = self.safe_get(self.data, 'host_id_remote')
         host_status = self.safe_get(self.data, 'host_status')
         tenant = self.safe_get(self.data, 'tenant')
+        if isinstance(tenant, dict):
+            tenant = tenant['name']
+
         if host_status == "Active":
             host_status = "0"
         elif host_status == "Offline":
@@ -257,6 +274,15 @@ class BaseDeviceDataGet:
             host_status = "0"
         if ip_address:
             ip_address = ip_address.split("/")[0]
+
+        host_name_for_clear = str(name)
+        if "kr01-mng" not in host_name_for_clear and "kr02-mng" not in host_name_for_clear:
+           cleaned_hostname = self.pattern_clear_host_name_sw.sub('', host_name_for_clear)
+        else:
+            cleaned_hostname = host_name_for_clear
+        if str(cleaned_hostname).endswith('.tech.mosreg.ru'):
+            cleaned_hostname = cleaned_hostname.replace('.tech.mosreg.ru', '')
+
         custom_fields = self.safe_get(self.data, 'custom_fields')
         tg_group = self.safe_get(self.data, 'tg_resource_group')
         map_group = self.safe_get(self.data, 'map_resource_group')
@@ -287,7 +313,7 @@ class BaseDeviceDataGet:
             (**{"device_type": device_type, "device_role": device_role, "custom_filed": custom_fields})
 
         device_data = {
-            "name": name,
+            "name": cleaned_hostname,
             "device_type": device_type,
             "host_id_remote":  str(host_id_remote),
             "host_id_local": str(host_id_local),

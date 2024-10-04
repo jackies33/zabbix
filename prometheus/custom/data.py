@@ -84,8 +84,8 @@ hosts_ports_tcp = [
     ('10.50.164.34', 80, 'tcp', 'sdc-zbx-server02', 'nginx-zbx-web'),
     ('10.50.164.34', 8055, 'tcp', 'sdc-zbx-server02', 'zbx_consumer'),
     ('10.50.164.34', 10051, 'tcp', 'sdc-zbx-server02', 'zbx-trapper'),
-    ('10.50.174.37', 10051, 'tcp', 'kr01-zbx-proxy01', 'zbx-trapper'),
-    ('10.50.164.37', 10051, 'tcp', 'sdc-zbx-proxy01', 'zbx-trapper'),
+    #('10.50.174.37', 10051, 'tcp', 'kr01-zbx-proxy01', 'zbx-trapper'),###turned off, the proxy doesn't work anymore
+    #('10.50.164.37', 10051, 'tcp', 'sdc-zbx-proxy01', 'zbx-trapper'),###turned off, the proxy doesn't work anymore
 
     #etcd services
     ('10.50.194.33', 2379, 'tcp', 'm9-zbx-etcd01', 'etcd'),

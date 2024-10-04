@@ -1,0 +1,11 @@
+
+pytz
+requests
+pyzabbix
+pynetbox
+urllib3
+netmiko
+paramiko
+lxml
+junos-eznc
+

@@ -331,8 +331,9 @@ class GetTemplate():
     """
     def classifier_template(self, *args):
         Mapp = GetMappings()
+        group_of_device = self.group_name.rpartition('/')[0]
         for group, template_name in Mapp.group_template_mapping.items():
-            if group in self.group_name:
+            if group == group_of_device:
                 template_name_proper = f"{template_name} {self.device_role}"
                 template_id = self.get_template(**{"template_name": template_name_proper, "source_template_name":self.group_name})
                 return template_id

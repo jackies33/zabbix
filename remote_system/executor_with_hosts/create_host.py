@@ -1,9 +1,7 @@
+
+
 import time
-
 from pyzabbix import ZabbixAPIException
-
-
-
 import logging
 import sys
 
@@ -14,7 +12,12 @@ from remote_system.core.parser_and_preparing import BaseDeviceDataGet
 
 
 
-
+message_logger1 = logging.getLogger('create_flow')
+message_logger1.setLevel(logging.INFO)
+file_handler = logging.FileHandler('/var/log/zabbix_custom/remote_system/create_host_flow.log')
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+file_handler.setFormatter(formatter)
+message_logger1.addHandler(file_handler)
 
 class Creator_Hosts(BaseDeviceDataGet):
     """
@@ -65,6 +68,7 @@ class Creator_Hosts(BaseDeviceDataGet):
             host_id = self.zapi.host.get(filter={'host': data['name']})[0]['hostid']
             self.zapi.host.update({'hostid': host_id, 'inventory_mode': 0})
             self.zapi.host.update({'hostid': host_id,'inventory': {'location': data["phys_address"]}})
+            message_logger1.info(f"DATA for tags : device_role:{data['device_role']}, remote_id:{data['host_id_remote']},'tenant':{data['tenant']}")
             self.zapi.host.update(hostid=host_id, tags=[
                                                         {'tag': "device_role", 'value': data['device_role']},
                                                         {'tag': "remote_id", 'value': data['host_id_remote']},
@@ -111,7 +115,8 @@ class Creator_Hosts(BaseDeviceDataGet):
             self.zapi.host.update({'hostid': host_id, 'inventory_mode': 0})
             self.zapi.host.update({'hostid': host_id,'inventory': {'location': data["phys_address"]}})
             self.zapi.host.update({'hostid': host_id,'inventory': {'serialno_a': data['serial']}})
-            tags_1 = [{'tag': "device_role", 'value': data['device_role']},{'tag': "remote_id", 'value': data['host_id_remote']}]
+            tags_1 = [{'tag': "device_role", 'value': data['device_role']},{'tag': "remote_id", 'value': data['host_id_remote']},
+                      {'tag': "tenant", 'value': data['tenant']}]
             custom_dict = data['custom_fields']
             tags = [{'tag': key, 'value': value['name']} if isinstance(value, dict) and 'name' in value else {'tag': key,'value': str(value)}for key, value in custom_dict.items()]
             full_tags = tags_1 + tags

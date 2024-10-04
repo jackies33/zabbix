@@ -16,8 +16,8 @@ class CLASSIFIER():
 
 
         def classifier_AuthProf(self,*args):
-                    if self.device_type == "NE20E-S2F" and self.device_role == "p/pe" or \
-                            self.device_type == "NetEngine 8000 F1A-8H20Q" and self.device_role == "p/pe" or \
+                    if self.device_type == "NE20E-S2F" and self.device_role == "p-pe" or \
+                            self.device_type == "NetEngine 8000 F1A-8H20Q" and self.device_role == "p-pe" or \
                             self.device_type == "S5700-28C-EI-24S" and self.device_role == "m-dsw"  or \
                             self.device_type == "S5735-S48S4X" and self.device_role == "m-dsw" :
                         authprof = "3"
