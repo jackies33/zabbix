@@ -81,6 +81,7 @@ hosts_ports_tcp = [
     ('10.50.174.34', 80, 'tcp', 'kr01-zbx-server01', 'nginx-zbx-web'),
     ('10.50.174.34', 8055, 'tcp', 'kr01-zbx-server01', 'zbx_consumer'),
     ('10.50.174.34', 10051, 'tcp', 'kr01-zbx-server01', 'zbx-trapper'),
+    ('10.50.174.37', 8065, 'tcp', 'kr01-zbx-proxy01', 'zbx_map_manager'),
     ('10.50.164.34', 80, 'tcp', 'sdc-zbx-server02', 'nginx-zbx-web'),
     ('10.50.164.34', 8055, 'tcp', 'sdc-zbx-server02', 'zbx_consumer'),
     ('10.50.164.34', 10051, 'tcp', 'sdc-zbx-server02', 'zbx-trapper'),

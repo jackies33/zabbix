@@ -10,6 +10,8 @@ services:
     restart: always
     volumes:
       - .:/app
+    ports:
+      - "8065:8065"
     environment:
       - PYTHONPATH=/app
     command: python map_manager/core/main.py

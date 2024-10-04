@@ -79,20 +79,22 @@ class GetHost():
                 return [False, (f"Map '{map_name}' not found.")]
             map_id = maps[0]['sysmapid']
             elements = self.zapi.map.get(selectSelements="extend", selectLinks="extend")
-            devices_name = []
+            devices_ids = []
             for elem in elements:
                 if elem['sysmapid'] == map_id:
                     selements = elem['selements']
                     for sel in selements:
+                        #print(sel)
+                        devices_ids.append(sel['elements'][0]['hostid'])
                         #print(sel['label'])
-                        devices_name.append(sel['label'])
+                        #devices_name.append(sel['label'])
 
             # Функция для выполнения запроса к Zabbix API
-            def get_host_info(device_name):
+            def get_host_info(device_id):
                 try:
                     #print(device_name)
                     result = self.zapi.host.get(
-                        filter={"name": device_name},
+                        filter={"hostid": device_id},
                         output=["hostid", "name"],
                         selectGroups=["groupid", "name"],
                         selectParentTemplates=["templateid", "name"],
@@ -109,8 +111,8 @@ class GetHost():
             # Ограничиваем количество потоков до 30
             with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
                 # Запускаем задачи в многопоточном режиме
-                future_to_device = {executor.submit(get_host_info, device_name): device_name for device_name
-                                    in devices_name}
+                future_to_device = {executor.submit(get_host_info, device_id): device_id for device_id
+                                    in devices_ids}
 
                 for future in concurrent.futures.as_completed(future_to_device):
                     device_name = future_to_device[future]
@@ -168,6 +170,10 @@ class GetHost():
             return False
 
 
+#map_name = "MAP_Group_AZ_M9"
+#call = GetHost()
+#maps_details = call.get_devices_from_map(map_name)
+#print(maps_details)
 
 
 
