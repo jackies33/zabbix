@@ -20,21 +20,8 @@ sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s http
 sudo chmod +x /usr/local/bin/docker-compose
 
 docker --version
+
 docker-compose --version
-
-mcedit Dockerfile
-
-_________________
-FROM python:3.9
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-CMD ["python", "main.py"]
-_________________
-
-
-add all app files in derectory with Dockerfile
 
 mcedit requirements.txt
 _________________
@@ -44,37 +31,33 @@ pika
 requests
 pyzabbix
 _________________
-docker build -t myapp:latest .
 
 mcedit docker-compose.yml
 
 _________________
+
+
+
 version: '3.8'
 
 services:
-  zbx_alarm_logic:
+  zbx_map_manager:
     build: .
-    container_name: zbx_alarm_logic
-    environment:
-      - RABBITMQ_HOST='10.50.164.38'
-      - PEER_SERVER_URL='10.50.174.37:8055'
-      - WEIGHT_SERVER=100
-      - SERVER_PORT=8055
-      - PEER_NODE_NAME="sdc"
-      - NODE_NAME="kr01"
-      - ZBX_API_URL="http://10.50.164.38:8282/api_jsonrpc.php"
-      - ZBX_API_TOKEN='c433fa5605593dd9bd3c1607de703ed7ac37a1542dec070ee94dbbdb7ff30f2a'
-      - ALARM_HOST_NAME="EXTERNAL_SYSTEM_ALARM_MANAGER"
+    container_name: zbx_map_manager
     networks:
       - app-network
+    restart: always
     volumes:
-      - /opt/rabbitmq_logs:/var/log/rabbitmq
-    ports:
-      - "8055:8055"
+      - .:/app
+    environment:
+      - PYTHONPATH=/app
+    command: python map_manager/core/main.py
 
 networks:
   app-network:
     driver: bridge
+
+
 _________________
 
 docker-compose build --no-cache
@@ -82,29 +65,18 @@ docker-compose up -d
 docker ps
 
 """
-print("Начало выполнения main.py")
+
 
 
 import time
 import datetime
 from pytz import timezone
-import os
-import sys
-
-#sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-#sys.path.append('/app/')
-#current_dir = os.path.dirname(os.path.abspath(__file__))
-#sys.path.append(os.path.join(current_dir, '..', '..'))
-
 
 from map_manager.core.discovery import START_DISCOVERY
 from map_manager.core.get_data import GetData
 from map_manager.core.tg_bot import telega_bot
 
 i = 0
-
-
-
 
 def start_job():
     get_data = GetData()
@@ -115,7 +87,6 @@ def start_job():
         tg_msg = f'Result from Map_Manager process for "{map}" = [{result[0]}] and not connected devices during execution = {result[1]}'
         tg = telega_bot()
         tg_send = tg.tg_sender(**{"message":tg_msg})
-
 
 if __name__ == "__main__":
     run_time = datetime.time(hour=23, minute=55, second=0)
@@ -132,5 +103,8 @@ if __name__ == "__main__":
             time.sleep(7200)  # sleep for waiting other day, and don't let to make job again in the same day
         else:
             time.sleep(120)  # enough time for request , and also not so often
+
+
+
 
 
