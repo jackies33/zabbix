@@ -1,25 +1,18 @@
-
-
-
-
-import os
-import sys
-
 #sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-#sys.path.append('/app/')
+sys.path.append('/app/')
 #current_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(os.path.join(current_dir, '..', '..'))
 
-from device_types.huawei import HUAWEI_CONN
-from device_types.juniper import JUNIPER_CONN
-from device_types.cisco import CISCO_CONN
-from device_types.fortinet import FORTINET_CONN
-from device_types.ibm import IBM
+from map_manager.device_types.huawei import HUAWEI_CONN
+from map_manager.device_types.juniper import JUNIPER_CONN
+from map_manager.device_types.cisco import CISCO_CONN
+from map_manager.device_types.fortinet import FORTINET_CONN
+from map_manager.device_types.ibm import IBM
 #from map_manager.device_types.aruba import ARUBA_OS
 #from map_manager.device_types.linux import LINUX
 #from map_manager.device_types.hpe import HPProCurve9xxx
 #from map_manager.device_types.mikrotik import MIKROTIK_CONN
-from device_types.qtech import QTECH_CONN
+from map_manager.device_types.qtech import QTECH_CONN
 
 
 class MAPPINGS():

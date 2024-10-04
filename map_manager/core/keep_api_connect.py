@@ -8,12 +8,12 @@ import os
 import sys
 
 #sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-#sys.path.append('/app/')
+sys.path.append('/app/')
 #current_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(os.path.join(current_dir, '..', '..'))
 
-from my_env import zbx_api_url, zbx_api_token
-from my_env import netbox_url,netbox_api_token
+from map_manager.my_env import zbx_api_url, zbx_api_token
+from map_manager.my_env import netbox_url,netbox_api_token
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

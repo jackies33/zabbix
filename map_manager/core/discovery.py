@@ -12,16 +12,16 @@ sys.stderr = open(os.devnull, 'w')
 
 import sys
 #sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-#sys.path.append('/app/')
+sys.path.append('/app/')
 #current_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(os.path.join(current_dir, '..', '..'))
 
-from get_data import GetData
-from mappings import MAPPINGS
-from parsing_data_maps import get_map_parse_data
-from parsing_data_links import LINK_PARSING
-from update_links import update_links
-from connect_devices_runner import run_in_threads
+from map_manager.core.get_data import GetData
+from map_manager.core.mappings import MAPPINGS
+from map_manager.core.parsing_data_maps import get_map_parse_data
+from map_manager.core.parsing_data_links import LINK_PARSING
+from map_manager.core.update_links import update_links
+from map_manager.core.connect_devices_runner import run_in_threads
 
 
 

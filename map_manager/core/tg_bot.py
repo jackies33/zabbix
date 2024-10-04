@@ -9,11 +9,11 @@ import os
 import sys
 
 #sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-#sys.path.append('/app/')
+sys.path.append('/app/')
 #current_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(os.path.join(current_dir, '..', '..'))
 
-from my_env import tg_token, chat_id
+from map_manager.my_env import tg_token, chat_id
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--db_type")

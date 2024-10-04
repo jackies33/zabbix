@@ -4,25 +4,19 @@
 import re
 from lxml import etree
 import xml.etree.ElementTree as ET
-from jnpr.junos.exception import ConnectAuthError,ConnectClosedError,ConnectError,ConnectTimeoutError
 from jnpr.junos import Device
 import paramiko
 import time
-import sys
-import os
-
-
-
 
 import os
 import sys
 
 #sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-#sys.path.append('/app/')
+sys.path.append('/app/')
 #current_dir = os.path.dirname(os.path.abspath(__file__))
 #sys.path.append(os.path.join(current_dir, '..', '..'))
 
-from ..my_env import mylogin , mypass
+from map_manager.my_env import mylogin , mypass
 
 
 
