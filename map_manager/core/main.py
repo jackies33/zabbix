@@ -71,10 +71,14 @@ docker ps
 import time
 import datetime
 from pytz import timezone
+from fastapi import FastAPI, Response
+import uvicorn
+
 
 from map_manager.core.discovery import START_DISCOVERY
 from map_manager.core.get_data import GetData
 from map_manager.core.tg_bot import telega_bot
+from map_manager.my_env import server_port
 
 i = 0
 
@@ -88,12 +92,19 @@ def start_job():
         tg = telega_bot()
         tg_send = tg.tg_sender(**{"message":tg_msg})
 
+def run_webserver():
+    app = FastAPI()
+    uvicorn.run(app, host="0.0.0.0", port=server_port)
+
+
+
 if __name__ == "__main__":
     run_time = datetime.time(hour=23, minute=55, second=0)
     tz = timezone('Europe/Moscow')
     timenow = datetime.datetime.now(tz).replace(microsecond=0).strftime('%Y-%m-%d %H:%M:%S')
     while i == 0:
-        start_job()
+        run_webserver()
+        #start_job()
         i = 1
 
     while i == 1:
@@ -102,9 +113,4 @@ if __name__ == "__main__":
             start_job()
             time.sleep(7200)  # sleep for waiting other day, and don't let to make job again in the same day
         else:
-            time.sleep(120)  # enough time for request , and also not so often
-
-
-
-
-
+            time.sleep(120)  # enough time for request , and also not so oft

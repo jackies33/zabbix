@@ -8,4 +8,7 @@ netmiko
 paramiko
 lxml
 junos-eznc
+uvicorn
+fastapi
+
 
