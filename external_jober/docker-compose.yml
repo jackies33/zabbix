@@ -1,0 +1,34 @@
+
+version: '3.8'
+
+services:
+  ext_jober_cron:
+    build:
+      context: /opt/zabbix_custom/zabbix_WRK/external_jober/externaljober/cron/
+      dockerfile: Dockerfile
+    container_name: jober_cron
+    environment:
+      - TZ=Europe/Moscow
+    networks:
+      - app-network
+    ports:
+      - "8011:8011"
+    restart: always
+
+  ext_jober_worker:
+    build:
+      context: /opt/zabbix_custom/zabbix_WRK/external_jober/externaljober/worker/
+      dockerfile: Dockerfile
+    container_name: jober_worker
+    environment:
+      - TZ=Europe/Moscow
+    networks:
+      - app-network
+    ports:
+      - "8012:8012"
+    restart: always
+
+
+networks:
+  app-network:
+    driver: bridge
