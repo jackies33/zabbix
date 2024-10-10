@@ -19,6 +19,24 @@ sudo systemctl start docker
 sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
+
+
+mcedit Dockerfile
+
+_________________
+
+FROM python:3.9
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+CMD ["python", "map_manager/core/main.py"]
+_________________
+
+
+docker build -t myapp:latest .
+
+
 docker --version
 
 docker-compose --version
@@ -73,6 +91,7 @@ import datetime
 from pytz import timezone
 from fastapi import FastAPI, Response
 import uvicorn
+from concurrent.futures import ThreadPoolExecutor
 
 
 from map_manager.core.discovery import START_DISCOVERY
@@ -99,18 +118,26 @@ def run_webserver():
 
 
 if __name__ == "__main__":
-    run_time = datetime.time(hour=23, minute=55, second=0)
+    run_time = datetime.time(hour=23, minute=30, second=0)
     tz = timezone('Europe/Moscow')
     timenow = datetime.datetime.now(tz).replace(microsecond=0).strftime('%Y-%m-%d %H:%M:%S')
+    executor = ThreadPoolExecutor(max_workers=10)
     while i == 0:
-        run_webserver()
+        executor.submit(run_webserver)
+        #executor.submit(start_job)
         #start_job()
         i = 1
 
     while i == 1:
         now = datetime.datetime.now()
-        if now.weekday() == 6 and now.time() >= run_time:
-            start_job()
-            time.sleep(7200)  # sleep for waiting other day, and don't let to make job again in the same day
+        if now.time() >= run_time:  # Проверяем, что текущее время >= 23:30
+            executor.submit(start_job)  # Запускаем задание
+            time.sleep(80000)  # Спим 22 часа, чтобы запускать задание только один раз в день
         else:
-            time.sleep(120)  # enough time for request , and also not so oft
+            time.sleep(120)  # Ждем 2 минуты перед следующей проверкой времени
+
+
+
+
+
+

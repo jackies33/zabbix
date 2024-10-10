@@ -14,6 +14,7 @@ services:
       - "8065:8065"
     environment:
       - PYTHONPATH=/app
+      - TZ=Europe/Moscow
     command: python map_manager/core/main.py
 
 networks:
