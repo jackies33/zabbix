@@ -1,7 +1,7 @@
 
 
 
-from external_jober.externaljober.devices_jobers.T8.atlas_start_collect import AtlasStartCollect
+from externaljober.devices_jobers.T8.atlas_start_collect import AtlasStartCollect
 
 class MAPPINGS():
 

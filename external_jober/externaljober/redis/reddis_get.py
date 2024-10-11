@@ -3,7 +3,7 @@ import redis
 import json
 
 
-from external_jober.externaljober.my_env import REDDIS_URL, REDDIS_PORT
+from externaljober.my_env import REDDIS_URL, REDDIS_PORT
 
 
 

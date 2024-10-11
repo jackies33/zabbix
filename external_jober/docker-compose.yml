@@ -4,8 +4,8 @@ version: '3.8'
 services:
   ext_jober_cron:
     build:
-      context: /opt/zabbix_custom/zabbix_WRK/external_jober/externaljober/cron/
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: externaljober/cron/Dockerfile
     container_name: jober_cron
     environment:
       - TZ=Europe/Moscow
@@ -17,8 +17,8 @@ services:
 
   ext_jober_worker:
     build:
-      context: /opt/zabbix_custom/zabbix_WRK/external_jober/externaljober/worker/
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: externaljober/worker/Dockerfile
     container_name: jober_worker
     environment:
       - TZ=Europe/Moscow

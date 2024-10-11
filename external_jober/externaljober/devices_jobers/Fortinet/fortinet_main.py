@@ -3,8 +3,8 @@
 
 
 
-from external_jober.externaljober.my_env import redis_keys_for_hosts
-from external_jober.externaljober.redis.reddis_get import REDDIS_GET
+from externaljober.my_env import redis_keys_for_hosts
+from externaljober.redis.reddis_get import REDDIS_GET
 
 class FortiNetApi():
     def __init__(self, **kwargs):

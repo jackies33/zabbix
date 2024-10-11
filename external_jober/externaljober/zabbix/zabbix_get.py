@@ -2,7 +2,7 @@
 
 
 
-from external_jober.externaljober.zabbix.keep_api_connect import zabbix_api_instance
+from externaljober.zabbix.keep_api_connect import zabbix_api_instance
 
 
 

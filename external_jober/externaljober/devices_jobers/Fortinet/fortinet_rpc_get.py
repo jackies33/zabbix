@@ -3,7 +3,7 @@
 import time
 
 import requests
-from external_jober.externaljober.devices_jobers.Fortinet.fortinet_main import FortiNetApi
+from externaljober.devices_jobers.Fortinet.fortinet_main import FortiNetApi
 
 
 

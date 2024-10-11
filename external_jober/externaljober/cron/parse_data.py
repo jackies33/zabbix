@@ -1,7 +1,7 @@
 
 
 
-from external_jober.externaljober.cron.get_data import exec_get_redis,PARSE_DATA_ZBX
+from externaljober.cron.get_data import exec_get_redis,PARSE_DATA_ZBX
 
 
 

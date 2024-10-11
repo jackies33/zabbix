@@ -8,9 +8,9 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 
-from external_jober.externaljober.worker.mappings import MAPPINGS
-from external_jober.externaljober.rabbitmq.producer import rb_producer
-from external_jober.externaljober.my_env import rbq_producer_sender_route_key,rbq_producer_sender_exchange
+from externaljober.worker.mappings import MAPPINGS
+from externaljober.rabbitmq.producer import rb_producer
+from externaljober.my_env import rbq_producer_sender_route_key,rbq_producer_sender_exchange
 
 
 class WRK_LOGIC():

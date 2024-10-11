@@ -7,9 +7,9 @@ import time
 import json
 
 
-from external_jober.externaljober.my_env import web_server_port,rbq_producer_worker_exchange,rbq_producer_worker_route_key
-from external_jober.externaljober.cron.parse_data import get_and_parse_redis_configs
-from external_jober.externaljober.rabbitmq.producer import rb_producer
+from externaljober.my_env import web_server_port,rbq_producer_worker_exchange,rbq_producer_worker_route_key
+from externaljober.cron.parse_data import get_and_parse_redis_configs
+from externaljober.rabbitmq.producer import rb_producer
 
 configs_redis = []
 

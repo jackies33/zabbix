@@ -1,7 +1,7 @@
 
 
-from external_jober.externaljober.devices_jobers.T8.atlas_get_interfaces import SNMPGetInterface
-from external_jober.externaljober.devices_jobers.T8.atlas_get_dom import SNMPGetDomStatus
+from externaljober.devices_jobers.T8.atlas_get_interfaces import SNMPGetInterface
+from externaljober.devices_jobers.T8.atlas_get_dom import SNMPGetDomStatus
 
 
 

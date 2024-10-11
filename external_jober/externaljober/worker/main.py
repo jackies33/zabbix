@@ -5,8 +5,8 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 
-from external_jober.externaljober.rabbitmq.consumer_worker import consume_from_rabbitmq
-from external_jober.externaljober.my_env import rbq_queue_for_worker
+from externaljober.rabbitmq.consumer_worker import consume_from_rabbitmq
+from externaljober.my_env import rbq_queue_for_worker
 
 
 def start_threads():

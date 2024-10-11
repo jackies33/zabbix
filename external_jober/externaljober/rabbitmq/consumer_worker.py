@@ -5,8 +5,8 @@
 import pika
 import json
 
-from external_jober.externaljober.my_env import rabbitmq_host, rbq_producer_pass, rbq_producer_login
-from external_jober.externaljober.worker.start_job import WRK_LOGIC
+from externaljober.my_env import rabbitmq_host, rbq_producer_pass, rbq_producer_login
+from externaljober.worker.start_job import WRK_LOGIC
 
 
 def process_message(queue_name, message_body):
