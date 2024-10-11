@@ -5,6 +5,6 @@ easysnmp
 pika
 redis
 pynetbox
-atexit
 urllib3
 pyzabbix
+

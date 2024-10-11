@@ -21,6 +21,8 @@ class WRK_LOGIC():
 
 
     def worker_logic(self):
+        current_time = time.time()
+        print(f"{current_time}  ----  start worker_logic")
         mappings = MAPPINGS()
         list_for_zbx_sender = []
         if self.queue_name == "zbx_external_jober_worker":
@@ -40,13 +42,13 @@ class WRK_LOGIC():
                             print(f[1],f[2])
                 message_to_rabbit = {"template_name":template_name,"job_name":job_name,"metrics":list_for_zbx_sender}
                 if isinstance(message_to_rabbit, dict):
-                    print(message_to_rabbit)
+                    #print(message_to_rabbit)
                     json_message = json.dumps(message_to_rabbit)
                     bytes_message = json_message.encode('utf-8')
-                    print(bytes_message)
+                    #print(bytes_message)
                     rb_send = rb_producer(bytes_message,rbq_producer_sender_exchange,rbq_producer_sender_route_key)
                     if rb_send == True:
-                        print(f"Sent job {job_name}to RabbitMQ success.")
+                        print(f"{current_time}  ----  Sent job {job_name}to RabbitMQ success.")
 
             else:
                 print([False,'UNFICIAL DATA in recieved Message from RabbitMQ!'])

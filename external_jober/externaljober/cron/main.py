@@ -60,15 +60,15 @@ def scheduler_tasks():
                         # Проверяем, истёк ли интервал задачи
                         if current_time - task_last_run >= task["interval"]:
                             #print(task)
-                            print(f"Interval reached for {task['job_name']}. Sending to RabbitMQ.")
+                            print(f"{current_time}  ----  Interval reached for {task['job_name']}. Sending to RabbitMQ.")
                             if isinstance(task, dict):
-                                print(task)
+                                #print(task)
                                 json_message = json.dumps(task)
                                 bytes_message = json_message.encode('utf-8')
-                                print(bytes_message)
+                                #print(bytes_message)
                                 rb_send = rb_producer(bytes_message,rbq_producer_worker_exchange,rbq_producer_worker_route_key)
                                 if rb_send == True:
-                                    print(f"Sent job {task['job_name']}to RabbitMQ success.")
+                                    print(f"{current_time}  ----  Sent job {task['job_name']}to RabbitMQ success.")
                             # Обновляем время последнего запуска
                             task["last_run"] = current_time
                         elif current_time - task_last_run < task['interval']:
@@ -78,16 +78,16 @@ def scheduler_tasks():
                             #print(f"Interval not reached yet for {task['job_name']}. Skipping task.")
                     elif not task_last_run:
                         #print(task)
-                        print(f"Interval reached for {task['job_name']}. Sending to RabbitMQ.")
-                        print(task)
+                        print(f"{current_time}  ----  Interval reached for {task['job_name']}. Sending to RabbitMQ.")
+                        #print(task)
                         if isinstance(task, dict):
                             json_message = json.dumps(task)
                             bytes_message = json_message.encode('utf-8')
-                            print(bytes_message)
+                            #print(bytes_message)
                             rb_send = rb_producer(bytes_message,rbq_producer_worker_exchange,rbq_producer_worker_route_key)
 
                             if rb_send == True:
-                                print(f'Sent job "{task["job_name"]}" to RabbitMQ success.')
+                                print(f'{current_time}  ----  Sent job "{task["job_name"]}" to RabbitMQ success.')
                         task.update({"last_run":current_time})
                 time.sleep(5)
             else:
