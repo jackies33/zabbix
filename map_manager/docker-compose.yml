@@ -15,7 +15,7 @@ services:
     environment:
       - PYTHONPATH=/app
       - TZ=Europe/Moscow
-    command: python map_manager/core/main.py
+    command: python map_manager/core/wrk_logic.py
 
 networks:
   app-network:

@@ -2,9 +2,9 @@
 
 
 
-from externaljober.redis.reddis_get import REDDIS_GET
+from externaljober.reddis.reddis_get import REDDIS_GET
 from externaljober.my_env import redis_configs_list_for_jobs
-from externaljober.zabbix.zabbix_get import GetZBX
+from externaljober.zabbix.zabbix import ZBX_PROC
 
 def poll_redis(prefix):#key
     reddis_Get = REDDIS_GET()
@@ -18,7 +18,8 @@ def exec_get_redis():
     for key in redis_configs_list_for_jobs:
         result_from_redis = poll_redis(key)
         if result_from_redis:
-            list_redis_configs.append(result_from_redis)
+            for r in result_from_redis:
+                list_redis_configs.append(r)
     return list_redis_configs
 
 
@@ -31,7 +32,7 @@ class PARSE_DATA_ZBX():
 
     def get_zbx_data(self,configs_list):
         job_number = 0
-        zbx_get = GetZBX()
+        zbx_get = ZBX_PROC()
         job_list = []
         if self.get_type == "bytemplate":
             for config in configs_list:
@@ -40,7 +41,7 @@ class PARSE_DATA_ZBX():
                 job_number = job_number + 1
                 job_list.append({
                     'template_name': config['template_name'], 'interval': config['interval'],  'job_name': config['job_name'],
-                     'hosts_zbx_data':hots_zbx_data, 'job_number':str(job_number)
+                     'hosts_zbx_data':hots_zbx_data, 'job_number':str(job_number),'rb_route_key':config['rb_route_key'], 'rb_exchange':config['rb_exchange']
                     }
                 )
         return job_list

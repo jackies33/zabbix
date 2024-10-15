@@ -11,7 +11,7 @@ class REDDIS_GET():
     def __init__(self):
         self.r = redis.Redis(host=REDDIS_URL, port=REDDIS_PORT)
 
-    def reddis_get(self,key):
+    def reddis_get_config(self,key):
         # Подключение к Redis
         # Получение конфигурации задачи с использованием JSON.GET
         job_config = self.r.execute_command("JSON.GET", key)
@@ -41,7 +41,17 @@ class REDDIS_GET():
 
         return all_data
 
+    def set_json(self, key, data_dict):
+        # Сериализуем словарь в JSON
+        json_data = json.dumps(data_dict)
+        # Используем JSON.SET команду для сохранения в Redis
+        self.r.execute_command('JSON.SET', key, '.', json_data)
+        return True
 
-#redis-cli JSON.SET externaljober:jober:scheduler:tasks:bytemplatesname . '[{"template_name": "Atlas.OS dwdm", "interval": 180, "type": "poll", "job_name":"dwdm_optic_ifaces_metrics_get"}'
+    def get_json(self, key):
+        data = self.r.execute_command("JSON.GET", key)
+        if data:
+            return json.loads(data)
+        else:
+            return None
 
-#redis-cli JSON.SET externaljober:jober:scheduler:tasks:templatesname:atlasosdwdm:1 . '{"device": "router1", "interval": 60, "type": "poll"}'

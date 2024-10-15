@@ -30,7 +30,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-CMD ["python", "map_manager/core/main.py"]
+CMD ["python", "map_manager/core/wrk_logic.py"]
 _________________
 
 
@@ -69,7 +69,7 @@ services:
       - .:/app
     environment:
       - PYTHONPATH=/app
-    command: python map_manager/core/main.py
+    command: python map_manager/core/wrk_logic.py
 
 networks:
   app-network:

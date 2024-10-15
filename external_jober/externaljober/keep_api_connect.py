@@ -6,8 +6,8 @@ import atexit
 import urllib3
 
 
-from externaljober.my_env import zbx_api_url, zbx_api_token
-from externaljober.my_env import netbox_url,netbox_api_token
+from externaljober.my_env import zbx_api_url, zbx_api_token,netbox_url,netbox_api_token
+
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

@@ -7,4 +7,5 @@ redis
 pynetbox
 urllib3
 pyzabbix
+pytz
 

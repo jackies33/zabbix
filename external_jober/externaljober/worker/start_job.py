@@ -1,7 +1,8 @@
 
 
 
-
+import datetime
+from pytz import timezone
 import time
 import json
 from concurrent.futures import ThreadPoolExecutor
@@ -12,7 +13,6 @@ from externaljober.worker.mappings import MAPPINGS
 from externaljober.rabbitmq.producer import rb_producer
 from externaljober.my_env import rbq_producer_sender_route_key,rbq_producer_sender_exchange
 
-
 class WRK_LOGIC():
 
     def __init__(self,queue_name,message):
@@ -21,46 +21,56 @@ class WRK_LOGIC():
 
 
     def worker_logic(self):
-        current_time = time.time()
-        print(f"{current_time}  ----  start worker_logic")
-        mappings = MAPPINGS()
-        list_for_zbx_sender = []
-        if self.queue_name == "zbx_external_jober_worker":
-            template_name = self.message.get('template_name',None)
-            job_name = self.message.get('job_name',None)
-            hosts_zbx_data = self.message.get('hosts_zbx_data')
-            if template_name and job_name and hosts_zbx_data:
-                with ThreadPoolExecutor(max_workers=30) as executor:
-                    futures_list = []
-                    for host in hosts_zbx_data:
-                        future = executor.submit(mappings.connection_exec,**{"template_name": template_name, "job_name": job_name, "host_zbx_data": host})
-                        futures_list.append(future)
-                    for f in futures_list:
-                        if f[0] == True:
-                            list_for_zbx_sender.append(f[1])
-                        elif f[0] == False:
-                            print(f[1],f[2])
-                message_to_rabbit = {"template_name":template_name,"job_name":job_name,"metrics":list_for_zbx_sender}
-                if isinstance(message_to_rabbit, dict):
-                    #print(message_to_rabbit)
-                    json_message = json.dumps(message_to_rabbit)
-                    bytes_message = json_message.encode('utf-8')
-                    #print(bytes_message)
-                    rb_send = rb_producer(bytes_message,rbq_producer_sender_exchange,rbq_producer_sender_route_key)
-                    if rb_send == True:
-                        print(f"{current_time}  ----  Sent job {job_name}to RabbitMQ success.")
+        try:
+            tz = timezone('Europe/Moscow')
+            timenow = datetime.datetime.now(tz).replace(microsecond=0).strftime('%Y-%m-%d %H:%M:%S')
+            print(f"{timenow}  ----  start worker_logic")
+            mappings = MAPPINGS()
+            list_for_zbx_sender = []
+            if self.queue_name == "zbx_external_jober_worker":
+                template_name = self.message.get('template_name',None)
+                job_name = self.message.get('job_name',None)
+                hosts_zbx_data = self.message.get('hosts_zbx_data')
+                if template_name and job_name and hosts_zbx_data:
+                    with ThreadPoolExecutor(max_workers=30) as executor:
+                        futures_list = []
+                        for host in hosts_zbx_data:
+                            future = executor.submit(mappings.connection_exec,**{"template_name": template_name, "job_name": job_name, "host_zbx_data": host})
+                            futures_list.append(future)
+                        for f in futures_list:
+                            if f.result()[0] == True:
+                                list_for_zbx_sender.append(f.result()[1])
+                            elif f.result()[0] == False:
+                                print(f.result()[1],f.result()[2])
+                    message_to_rabbit = {"template_name":template_name,"job_name":job_name,"metrics":list_for_zbx_sender}
+                    if isinstance(message_to_rabbit, dict):
+                        #print(message_to_rabbit)
+                        json_message = json.dumps(message_to_rabbit)
+                        bytes_message = json_message.encode('utf-8')
+                        #print(bytes_message)
+                        rb_send = rb_producer(bytes_message,rbq_producer_sender_exchange,rbq_producer_sender_route_key)
+                        if rb_send == True:
+                            print(f"{timenow}  ----  Sent job {job_name}to RabbitMQ success.")
+                #elif job_name == 'aps_status_get_update' or job_name == "aps_data_collect_full":#resend task
+                #    job_name = self.message.get('job_name', None)
+                #    json_message = json.dumps(self.message)
+                #    bytes_message = json_message.encode('utf-8')
+                #    rb_send = rb_producer(bytes_message, "air_wave_workers", "air_wave_apstatus_worker")
+                #    if rb_send == True:
+                #        print(f"{timenow}  ----  Sent job {job_name}to RabbitMQ success.")
+                else:
+                    print([False,'UNFICIAL DATA in recieved Message from RabbitMQ!'])
+            #elif self.queue_name == "air_wave_apstatus_worker":#resend task
+            #    job_name = self.message.get('job_name', None)
+            #    json_message = json.dumps(self.message)
+            #    bytes_message = json_message.encode('utf-8')
+            #    rb_send = rb_producer(bytes_message, "air_wave_workers", "air_wave_apstatus_worker")
+            #    if rb_send == True:
+            #        print(f"{timenow}  ----  Sent job {job_name}to RabbitMQ success.")
 
             else:
-                print([False,'UNFICIAL DATA in recieved Message from RabbitMQ!'])
-        else:
-            print([False, 'Unrecognized queue!'])
+                print([False, 'Unrecognized queue!'])
+        except Exception as err:
+            print(False, err)
 
 
-
-
-
-#if __name__ == "__main__":
-#    my_queue = "zbx_external_jober_worker"
-#    my_dict = {'template_name': 'Atlas.OS dwdm', 'interval': 180, 'job_name': 'dwdm_optic_ifaces_metrics_get', 'hosts_zbx_data': [{'hostid': '13031', 'name': 'dwdm-krasnogorsk-kr01', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.137.157', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13695', 'name': 'dwdm-istra-01', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.137.148', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13209', 'name': 'kr01-mus-dwdm', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.50.71.9', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13527', 'name': 'sdc-mus-dwdm', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.50.61.9', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13038', 'name': 'dwdm-domodedovo-01', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.137.12', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13042', 'name': 'dwdm-vidnoe-02', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.137.5', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13035', 'name': 'dwdm-vidnoe-01', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.137.4', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13036', 'name': 'dwdm-pushcino-01', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.137.60', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13034', 'name': 'dwdm-podolsk-01', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.136.5', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13052', 'name': 'dwdm-odincovo-02', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.137.85', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13046', 'name': 'dwdm-odincovo-01', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.137.84', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13047', 'name': 'dwdm-lyubercy-02', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.136.69', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13053', 'name': 'dwdm-lyubercy-01', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.136.68', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13391', 'name': 'm9-mus-dwdm', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.50.91.9', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}, {'hostid': '13055', 'name': 'dwdm-krasnogorsk-sdc', 'parentTemplates': [{'templateid': '16248', 'name': 'Atlas.OS dwdm'}], 'groups': [{'groupid': '30', 'name': 'T8/Atlas.OS/T6-10EP-DCI-01'}], 'interfaces': [{'ip': '10.100.137.156', 'details': {'version': '2', 'bulk': '1', 'community': 'n0cdwdm', 'max_repetitions': '3'}}]}], 'job_number': '1'}
-#    WRK = WRK_LOGIC(my_queue,my_dict)
-#    result = WRK.worker_logic()

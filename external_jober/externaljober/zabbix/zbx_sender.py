@@ -6,7 +6,7 @@ import time
 import os
 
 
-from my_env import TEMP_FILE_PATH
+from externaljober.my_env import TEMP_FILE_PATH
 
 
 def send_to_zabbix_bulk(zabbix_server, data):
@@ -14,7 +14,7 @@ def send_to_zabbix_bulk(zabbix_server, data):
     try:
         if os.path.exists(TEMP_FILE_PATH):
             os.remove(TEMP_FILE_PATH)
-        time.sleep(5)
+        time.sleep(10)
         with open(TEMP_FILE_PATH, 'w') as temp_file:
             temp_file.write("\n".join(data) + '\n')
             logging.debug(f"Data written to temp file {TEMP_FILE_PATH}")
