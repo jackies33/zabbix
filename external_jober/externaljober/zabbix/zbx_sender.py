@@ -6,7 +6,9 @@ import time
 import os
 
 
-from externaljober.my_env import TEMP_FILE_PATH
+#from externaljober.my_env import TEMP_FILE_PATH
+TEMP_FILE_PATH = os.getenv('TEMP_FILE_PATH', '/app/tmp/data_for_sender')
+
 
 
 def send_to_zabbix_bulk(zabbix_server, data):

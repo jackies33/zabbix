@@ -4,7 +4,7 @@ import pika
 import json
 
 from externaljober.my_env import rabbitmq_host, rbq_producer_pass, rbq_producer_login
-from externaljober.worker_aruba.aruba_ap_status.wrk_logic import WRK_LOGIC
+from externaljober.worker_aruba.wrk_logic import WRK_LOGIC
 
 
 def process_message(queue_name, message_body):
@@ -41,3 +41,8 @@ def consume_from_rabbitmq(queue_name):
 
         except Exception as e:
             print(f"Error connecting to RabbitMQ {queue_name}: {e}")
+
+
+
+
+

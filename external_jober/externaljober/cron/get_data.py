@@ -2,12 +2,12 @@
 
 
 
-from externaljober.reddis.reddis_get import REDDIS_GET
+from externaljober.reddis.reddis_get import REDDIS
 from externaljober.my_env import redis_configs_list_for_jobs
 from externaljober.zabbix.zabbix import ZBX_PROC
 
 def poll_redis(prefix):#key
-    reddis_Get = REDDIS_GET()
+    reddis_Get = REDDIS()
     #redis_get_result = reddis_Get.reddis_get(key)
     redis_get_result = reddis_Get.reddis_get_all_by_prefix(prefix)
     if redis_get_result:

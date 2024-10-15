@@ -7,7 +7,7 @@ from externaljober.my_env import REDDIS_URL, REDDIS_PORT
 
 
 
-class REDDIS_GET():
+class REDDIS():
     def __init__(self):
         self.r = redis.Redis(host=REDDIS_URL, port=REDDIS_PORT)
 
