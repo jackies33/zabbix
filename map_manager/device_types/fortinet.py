@@ -99,13 +99,13 @@ class FORTINET_CONN():
                                 look_for_keys=False)
                     ssh1 = ssh.invoke_shell()
                     time.sleep(1)
-                    if group_name == "Fortinet/Fortinet.Fortigate/FortiGate-6501F":
+                    if group_name == "Fortinet/Fortinet/FortiGate-6501F":
                         ssh1.send(cmnd1_1for6500)
                         time.sleep(1)
                         ssh1.send(cmnd2)
                         time.sleep(1)
                         time.sleep(1)
-                    elif group_name == "Fortinet/Fortinet.Fortigate/FortiGate-2500E":
+                    elif group_name == "Fortinet/Fortinet/FortiGate-2500E":
                         ssh1.send(cmnd1_1for2500)
                         time.sleep(1)
                         ssh1.send(cmnd1_2for2500)
@@ -148,11 +148,11 @@ class FORTINET_CONN():
 
             def FortiNet_start(self,**kwargs):
                 group_name = kwargs['groups'][0]['name']
-                if group_name == "Fortinet/Fortinet.Fortigate/FortiGate-6501F" \
-                        or group_name == "Fortinet/Fortinet.Fortigate/FortiGate-2500E":
+                if group_name == "Fortinet/Fortinet/FortiGate-6501F" \
+                        or group_name == "Fortinet/Fortinet/FortiGate-2500E":
                     result = self.conn_FortiGate_diagnose_lldprx(**kwargs)
                     return result
                 else:
                     return [False, None, kwargs['name']]
-                #elif group_name == "Fortinet/Fortinet.Fortigate/FortiGate-2500E":
+                #elif group_name == "Fortinet/Fortinet/FortiGate-2500E":
 

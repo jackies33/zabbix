@@ -6,14 +6,11 @@ import atexit
 import urllib3
 
 
-from my_env import zbx_api_url, zbx_api_token
-from my_env import netbox_url,netbox_api_token
-
+from externaljober.my_env import zbx_api_url, zbx_api_token,netbox_url,netbox_api_token
 
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 
 class ZabbixAPIInstance:
     _instance = None
@@ -29,7 +26,7 @@ class ZabbixAPIInstance:
             self.zapi = ZabbixAPI(zbx_api_url)
             self.zapi.session.verify = False
             self.zapi.login(api_token=zbx_api_token)
-            atexit.register(self.logout)
+            #atexit.register(self.logout)
         return self.zapi
 
     def logout(self):
@@ -69,5 +66,6 @@ class NetboxAPIInstance:
 
 
 netbox_api_instance = NetboxAPIInstance()
+
 
 

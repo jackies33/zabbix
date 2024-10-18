@@ -59,7 +59,7 @@ class MAPPINGS():
             "Cisco.IOSXR": (CISCO_CONN, "conn_Cisco_IOS"),
             "IBM.NOS": (IBM, "conn_IBM_lenovo_sw"),
            # "Aruba.ArubaOS": (ARUBA_OS, "conn_AWMP"),
-            "Fortinet.Fortigate": (FORTINET_CONN, "FortiNet_start"),
+            "Fortinet": (FORTINET_CONN, "FortiNet_start"),
            # "OS.Linux": (LINUX, "conn_OS_Linux"),
            # "HP.ProCurve9xxx": (HPProCurve9xxx, "conn_ProCurve9xxx"),
            # "MikroTik.RouterOS": (MIKROTIK_CONN, "conn_RouterOS"),

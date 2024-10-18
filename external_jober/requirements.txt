@@ -1,0 +1,12 @@
+
+fastapi
+uvicorn
+easysnmp
+pika
+redis
+pynetbox
+urllib3
+pyzabbix
+pytz
+airwaveapiclient
+
