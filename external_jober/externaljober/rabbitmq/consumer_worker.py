@@ -32,7 +32,8 @@ def consume_from_rabbitmq(queue_name):
             credentials = pika.PlainCredentials(rbq_producer_login, rbq_producer_pass)
             connection = pika.BlockingConnection(pika.ConnectionParameters(
                 host=rabbitmq_host,
-                credentials=credentials
+                credentials=credentials,
+                heartbeat=900
             ))
             channel = connection.channel()
             channel.basic_qos(prefetch_count=1)
@@ -42,3 +43,8 @@ def consume_from_rabbitmq(queue_name):
 
         except Exception as e:
             print(f"Error connecting to RabbitMQ {queue_name}: {e}")
+
+
+
+
+

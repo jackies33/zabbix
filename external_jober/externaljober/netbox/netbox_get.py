@@ -23,6 +23,7 @@ class NetboxGet():
                 try:
                     host_name = dev.name
                     host_sn = dev.serial
+                    host_status = dev.status
                     host_second_location = dev.location
                     host_first_location = None
                     host_third_location = None
@@ -51,6 +52,7 @@ class NetboxGet():
                     devices_list.append({
                         "host_name": str(host_name),
                         "host_sn": str(host_sn),
+                        "host_status": str(host_status),
                         "host_third_location": str(host_third_location),
                         "host_second_location": str(host_second_location.name if host_second_location else "None"),
                         "host_first_location": str(host_first_location),
