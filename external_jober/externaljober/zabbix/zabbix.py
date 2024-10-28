@@ -120,20 +120,20 @@ class ZBX_PROC():
         """Create item and get its id or just get id in zabbix"""
         try:
             item_id = None
-            item = self.zapi.item.get(filter={"hostid": kwargs["host_id"], "key_": kwargs["item_key"]})
+            item = self.zapi.item.get(filter={"hostid": kwargs["host_id"], "key_": kwargs["item_key"]},selectTags = 'extend')
             if not item:
                 create_item = self.exec_create_item(**kwargs)
                 if create_item[0] == False:
                     return [False, create_item[1]]
                 elif create_item[0] == True:
                     item_id = create_item[1]
-                    item = self.zapi.item.get(filter={"hostid": kwargs["host_id"], "key_": kwargs["item_key"]},
-                                              selectTags='extend')
+                    item = self.zapi.item.get(filter={"hostid": kwargs["host_id"], "key_": kwargs["item_key"]},selectTags='extend')
                     if kwargs["create_trigger"] == True:
                         print('creating_trigger')
                         self.create_trigger(**kwargs)
             else:
                 item_id = item[0]['itemid']
+            #start to check serial number
             if item_id and kwargs['check_sn'] == True:
                 item_tags = item[0]['tags']
                 for item in item_tags:
@@ -168,7 +168,7 @@ class ZBX_PROC():
                     return [True,item_id]
             elif kwargs["create_trigger"] == False:
                 return [True, item_id]
-            """
+           """
         except Exception as err:
             #message_logger1.error(err)
             return [False,err]

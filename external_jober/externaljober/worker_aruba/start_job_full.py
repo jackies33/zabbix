@@ -41,7 +41,7 @@ def start_full_process(wap_dict_from_nb,AW_HOSTNAME):
             #"""
             with ThreadPoolExecutor(max_workers=10) as executor:
                 try:
-                    futures = [executor.submit(AP_PROCEDURE.process_ap, ap, interface_id, ap_data_list, wap_dict_from_nb)
+                    futures = [executor.submit(AP_PROCEDURE.process_ap, ap, interface_id, wap_dict_from_nb)
                                for ap in ap_list]
                     for future in as_completed(futures):
                         try:
@@ -49,6 +49,7 @@ def start_full_process(wap_dict_from_nb,AW_HOSTNAME):
                             if result:
                                 if result[0] == True:
                                     zbx_items_ids['data'].append(result[1])
+                                    ap_data_list.append(result[3])
                                     result_count = result[2]
                                     if result_count['value'] == "UP":
                                         if result_count['floor'] in ap_count_dict['count_up']:
@@ -76,7 +77,8 @@ def start_full_process(wap_dict_from_nb,AW_HOSTNAME):
                     ap_count_dict["count_up"][floor] = 0
                 if floor not in ap_count_dict["count_down"]:
                     ap_count_dict["count_down"][floor] = 0
-            print(ap_count_dict)
+            if ap_count_dict["count_down"] == {} or ap_count_dict["count_up"] == {}:
+                return [False,None]
             count_data_list = AP_PROCEDURE.process_count_ap(ap_count_dict,wap_scope_name)
             for count_d in count_data_list[1]:
                 zbx_items_ids['data'].append(count_d)

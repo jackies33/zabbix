@@ -23,7 +23,7 @@ class PROCEDURE_AP():
         self.aw_host_id = kwargs['aw_host_id']
 
 
-    def process_ap(self, ap, interface_id, ap_data_list, wap_dict_from_nb):
+    def process_ap(self, ap, interface_id, wap_dict_from_nb):
         """Process Access Point data and collect data for Zabbix"""
         try:
             #print(wap_dict_from_nb)
@@ -93,15 +93,17 @@ class PROCEDURE_AP():
                                                                    "host_sn_for_check": ap_sn
                                                                    }
                                                 item_id = zbx.create_item(**for_create_item)
+                                                print(f"item_id from zabbix 1 {item_id}")
                                                 # item_id = zbx.create_item(host_id, f"{item_name} -- {ap_name}", key, tags, value_type, item_type)
 
                                                 if item_id:
                                                     if item_id[0] == True:
-                                                        ap_data_list.append(f"{self.aw_hostname} {key} {ap_value}")
+                                                    # ap_data_list.append(f"{self.aw_hostname} {key} {ap_value}")
                                                         return [
                                                                 True,
                                                                 {"item_id":item_id[1],"item_key":key},
-                                                                {"floor": host_first_location, "value": ap_status}
+                                                                {"floor": host_first_location, "value": ap_status},
+                                                                {"value_for_ap_list":f"{self.aw_hostname} {key} {ap_value}"}
                                                         ]
 
                                                 else:

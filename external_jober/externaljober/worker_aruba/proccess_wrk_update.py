@@ -57,7 +57,7 @@ class PROCEDURE_AP():
                                     elif ap_status == 'false':
                                         ap_status = 'DOWN'
                                     else:
-                                        ap_status = 'DOWN'
+                                        ap_status = 'UP'
                                     if ap_name and host_first_location and host_second_location:
                                         try:
                                             ap_name = f"{facility_name}_{ap_name}({host_first_location}).({host_second_location})"
