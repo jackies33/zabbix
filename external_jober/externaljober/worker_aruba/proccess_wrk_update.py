@@ -57,7 +57,7 @@ class PROCEDURE_AP():
                                     elif ap_status == 'false':
                                         ap_status = 'DOWN'
                                     else:
-                                        ap_status = 'DOWN'
+                                        ap_status = 'UP'
                                     if ap_name and host_first_location and host_second_location:
                                         try:
                                             ap_name = f"{facility_name}_{ap_name}({host_first_location}).({host_second_location})"
@@ -118,7 +118,7 @@ class PROCEDURE_AP():
                 floor_number = re.findall(r"-?\d+", key)
                 if floor_number:
                     floor_number = floor_number[0].strip()
-                print(floor_number)
+                #print(floor_number)
                 #if facility_name == "novator":
                 #    floor_number = key.split("Этаж")[0].strip()
                 #elif facility_name == "dpmo":
@@ -139,7 +139,7 @@ class PROCEDURE_AP():
                 floor_number = re.findall(r"-?\d+", key2)
                 if floor_number:
                     floor_number = floor_number[0].strip()
-                print(floor_number)
+                #print(floor_number)
                 #if facility_name == "novator":
                 #    floor_number = key2.split("Этаж")[0].strip()
                 #elif facility_name == "dpmo":

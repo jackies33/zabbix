@@ -76,7 +76,26 @@ class ZBX_PROC():
             return [False,err]
         return host[0]
 
-    def create_trigger(self, **kwargs):
+    def get_all_items_in_host(self, host_id):
+        try:
+            items = self.zapi.item.get(
+                hostids=host_id,
+                output=["itemid", "key_"]  # указываем нужные поля
+            )
+
+            return [True,{"items": items}]
+
+        except Exception as err:
+            # logging.error(f"Error getting or creating host: {err}")
+            return [False, err]
+    def delete_item(self,item_id):
+        try:
+            self.zapi.item.delete(item_id)
+            return [True,item_id]
+        except Exception as err:
+            return [False,err]
+
+    def create_trigger_status(self, **kwargs):
         try:
             time.sleep(1)
             triggers = self.zapi.trigger.get(filter={"event_name": f"{kwargs['wap_name']} is Down"})
@@ -93,6 +112,31 @@ class ZBX_PROC():
                     comments=kwargs["item_name"],
                     event_name=f"{kwargs['wap_name']} is Down",
                     tags=kwargs["tags"]
+                )
+            # trigger_id = trigger_id.get('triggerids', [])[0]
+        except Exception as err:
+            print(err)
+            #message_logger1.error(err)
+
+    def create_trigger_diff(self, **kwargs):
+        try:
+            time.sleep(1)
+            triggers = self.zapi.trigger.get(filter={"event_name": f"{kwargs['wap_name']} {kwargs['event_name']}"})
+            if triggers:
+                return True
+            else:
+                tags = kwargs['tags']
+                for tag_trigg in kwargs["tags_for_trigger"]:
+                    tags.append(tag_trigg)
+                self.zapi.trigger.create(
+                    description=kwargs["item_name"],
+                    expression=f"last(/{kwargs['host_name']}/{kwargs['item_key']})=1",
+                    recovery_mode=1,
+                    recovery_expression=f"last(/{kwargs['host_name']}/{kwargs['item_key']})=0",
+                    priority=2,
+                    comments=kwargs["item_name"],
+                    event_name=f"{kwargs['wap_name']} {kwargs['event_name']}",
+                    tags=tags
                 )
             # trigger_id = trigger_id.get('triggerids', [])[0]
         except Exception as err:
@@ -120,20 +164,24 @@ class ZBX_PROC():
         """Create item and get its id or just get id in zabbix"""
         try:
             item_id = None
-            item = self.zapi.item.get(filter={"hostid": kwargs["host_id"], "key_": kwargs["item_key"]})
+            item = self.zapi.item.get(filter={"hostid": kwargs["host_id"], "key_": kwargs["item_key"]},selectTags = 'extend')
             if not item:
                 create_item = self.exec_create_item(**kwargs)
                 if create_item[0] == False:
                     return [False, create_item[1]]
                 elif create_item[0] == True:
                     item_id = create_item[1]
-                    item = self.zapi.item.get(filter={"hostid": kwargs["host_id"], "key_": kwargs["item_key"]},
-                                              selectTags='extend')
+                    item = self.zapi.item.get(filter={"hostid": kwargs["host_id"], "key_": kwargs["item_key"]},selectTags='extend')
                     if kwargs["create_trigger"] == True:
-                        print('creating_trigger')
-                        self.create_trigger(**kwargs)
+                        if kwargs['purpose_trigger'] == "Status":
+                            print('creating_trigger')
+                            self.create_trigger_status(**kwargs)
+                        elif kwargs['purpose_trigger'] == "Different":
+                            print('creating_trigger')
+                            self.create_trigger_diff(**kwargs)
             else:
                 item_id = item[0]['itemid']
+            #start to check serial number
             if item_id and kwargs['check_sn'] == True:
                 item_tags = item[0]['tags']
                 for item in item_tags:
@@ -145,7 +193,7 @@ class ZBX_PROC():
                             self.exec_create_item(**kwargs)
                             time.sleep(1)
                             if kwargs["create_trigger"] == True:
-                                self.create_trigger(**kwargs)
+                                self.create_trigger_status(**kwargs)
                             return [True, item_id]
                         elif serial_number == kwargs['host_sn_for_check']:
                             print("SN is ok")
@@ -168,10 +216,12 @@ class ZBX_PROC():
                     return [True,item_id]
             elif kwargs["create_trigger"] == False:
                 return [True, item_id]
-            """
+           """
         except Exception as err:
             #message_logger1.error(err)
             return [False,err]
+
+
 
 
 

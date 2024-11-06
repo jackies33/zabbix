@@ -97,7 +97,7 @@ import time
 import os
 
 
-from externaljober.my_env import rbq_queue_for_worker_airwave
+from externaljober.my_env import rbq_queues_for_worker_airwave
 from externaljober.rabbitmq.consumer_airwave import consume_from_rabbitmq
 
 
@@ -114,8 +114,8 @@ def run_webserver():
             time.sleep(5)
 
 def start_threads():
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        executor.submit(consume_from_rabbitmq, rbq_queue_for_worker_airwave)
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        executor.submit(consume_from_rabbitmq, rbq_queues_for_worker_airwave)
         executor.submit(run_webserver)
         # executor.submit(consume_from_rabbitmq, rbq_queue_for_worker)
 

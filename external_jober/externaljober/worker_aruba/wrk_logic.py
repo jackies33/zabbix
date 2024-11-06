@@ -1,12 +1,15 @@
 
 
 import datetime
+import time
+
 from pytz import timezone
 
 
 
 from externaljober.worker_aruba.start_job_full import start_full_process
 from externaljober.worker_aruba.start_job_update import start_update_process
+from externaljober.worker_aruba.proccess_wrk_ssid_user_count import PROCEDURE_SSID
 from externaljober.reddis.reddis_get import REDDIS
 from externaljober.netbox.netbox_get import NetboxGet
 from externaljober.zabbix.zbx_sender import send_to_zabbix_bulk
@@ -25,6 +28,7 @@ class WRK_LOGIC():
                 tz = timezone('Europe/Moscow')
                 timenow = datetime.datetime.now(tz).replace(microsecond=0).strftime('%Y-%m-%d %H:%M:%S')
                 print(f"{timenow}  ----  start worker_logic")
+                redis_call = REDDIS()
                 if self.queue_name == "air_wave_apstatus_worker":
                     host_name = task.get('host_name',None)
                     job_name = task.get('job_name',None)
@@ -32,7 +36,6 @@ class WRK_LOGIC():
                     key_redis_for_nb_collect_data = task.get("key_nb_collect_data", None)
                     key_redis_for_zbx_collect_data = task.get("key_zbx_collect_data", None)
                     if host_name and job_name and key_redis_for_zbx_collect_data and key_redis_for_nb_collect_data:
-                        redis_call = REDDIS()
                         nb_call = NetboxGet()
                         if job_name == "aps_status_get_update":
                             nb_data = redis_call.get_json(key_redis_for_nb_collect_data)
@@ -46,6 +49,27 @@ class WRK_LOGIC():
                             redis_call.set_json(key_redis_for_nb_collect_data,nb_data)
                             send_to_zabbix_bulk(ZABBIX_SENDER_URL, result["sender_data_1"])
                             send_to_zabbix_bulk(ZABBIX_SENDER_URL, result["sender_data_2"])
+                            if result['sender_data_3'] != []:
+                                time.sleep(30)
+                                send_to_zabbix_bulk(ZABBIX_SENDER_URL, result["sender_data_3"])
+
+                elif self.queue_name == "mobility_master_worker":
+                    host_name = task.get('host_name', None)
+                    job_name = task.get('job_name', None)
+                    key_redis_for_zbx_collect_data = task.get("key_zbx_collect_data", None)
+                    proccess = PROCEDURE_SSID(host_name)
+                    if job_name == "ssid_count_users_full":
+                        result = proccess.get_ssid_user_count_full()
+                        if result[0] == True:
+                            result_dict = result[1]
+                            send_to_zabbix_bulk(ZABBIX_SENDER_URL, result_dict["sender_data_1"])
+                            redis_call.set_json(key_redis_for_zbx_collect_data, result_dict["zbx_items_ids"])
+                    elif job_name == "ssid_count_users_update":
+                        result = proccess.get_ssid_user_count_update()
+                        if result[0] == True:
+                            result_dict = result[1]
+                            send_to_zabbix_bulk(ZABBIX_SENDER_URL, result_dict["sender_data_1"])
+
 
                     else:
                         print([False,'UNFICIAL DATA in recieved Message from RabbitMQ!'])

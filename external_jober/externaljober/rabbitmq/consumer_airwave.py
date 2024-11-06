@@ -25,7 +25,7 @@ def on_message_callback(ch, method, properties, body):
     process_message(method.routing_key, body)
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
-def consume_from_rabbitmq(queue_name):
+def consume_from_rabbitmq(queue_names):
     while True:
         try:
             credentials = pika.PlainCredentials(rbq_producer_login, rbq_producer_pass)
@@ -36,12 +36,13 @@ def consume_from_rabbitmq(queue_name):
             ))
             channel = connection.channel()
             channel.basic_qos(prefetch_count=1)
-            channel.basic_consume(queue=queue_name, on_message_callback=on_message_callback, auto_ack=False)
-            print(f"Start listening on queue: {queue_name}")
+            for queue_name in queue_names:
+                channel.basic_consume(queue=queue_name, on_message_callback=on_message_callback, auto_ack=False)
+                print(f"Start listening on queue: {queue_name}")
             channel.start_consuming()
 
         except Exception as e:
-            print(f"Error connecting to RabbitMQ {queue_name}: {e}")
+            print(f"Error connecting to RabbitMQ {queue_names}: {e}")
 
 
 

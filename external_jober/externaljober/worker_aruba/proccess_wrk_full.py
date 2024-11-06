@@ -23,7 +23,7 @@ class PROCEDURE_AP():
         self.aw_host_id = kwargs['aw_host_id']
 
 
-    def process_ap(self, ap, interface_id, ap_data_list, wap_dict_from_nb):
+    def process_ap(self, ap, interface_id, wap_dict_from_nb):
         """Process Access Point data and collect data for Zabbix"""
         try:
             #print(wap_dict_from_nb)
@@ -32,11 +32,13 @@ class PROCEDURE_AP():
             facility_name = wap_scope_name.split("wap-")[1]
             ap_name = ap.get('name', None)
             ap_sn = ap.get('serial_number', None)
+            found_in_nb = False
             if ap_name:
                     host_first_location = None
                     host_second_location = None
                     for nb_wap in wap_list_from_nb:
                         if str(nb_wap['host_sn']) == str(ap_sn):
+                            found_in_nb = True
                             if str(nb_wap['host_status']) == "Active":
                                 ap_name = nb_wap.get("host_name",None)
                                 ap_sn = str(nb_wap['host_sn'])
@@ -88,20 +90,24 @@ class PROCEDURE_AP():
                                                                    "item_name": item_full_name,
                                                                    "item_key": key,
                                                                    "tags": tags, "value_type": 4, "item_type": 2,
-                                                                   "wap_name": ap_name, "create_trigger": True,
+                                                                   "wap_name": ap_name,
+                                                                   "create_trigger": True,
+                                                                   "purpose_trigger": "Status",
                                                                    "check_sn": True,
                                                                    "host_sn_for_check": ap_sn
                                                                    }
                                                 item_id = zbx.create_item(**for_create_item)
+                                                print(f"item_id from zabbix 1 {item_id}")
                                                 # item_id = zbx.create_item(host_id, f"{item_name} -- {ap_name}", key, tags, value_type, item_type)
 
                                                 if item_id:
                                                     if item_id[0] == True:
-                                                        ap_data_list.append(f"{self.aw_hostname} {key} {ap_value}")
+                                                    # ap_data_list.append(f"{self.aw_hostname} {key} {ap_value}")
                                                         return [
                                                                 True,
                                                                 {"item_id":item_id[1],"item_key":key},
-                                                                {"floor": host_first_location, "value": ap_status}
+                                                                {"floor": host_first_location, "value": ap_status},
+                                                                f"{self.aw_hostname} {key} {ap_value}"
                                                         ]
 
                                                 else:
@@ -115,6 +121,7 @@ class PROCEDURE_AP():
                                     return [False,(wap_scope_name,host_first_location,host_second_location)]
                             else:
                                 return [False,ap_name]
+
         except Exception as err:
             return [False,err]
 
@@ -206,8 +213,71 @@ class PROCEDURE_AP():
 
         return [count_data_list,count_data_list_for_reddis]
 
+    def clear_extra_waste_items(self, **kwargs):
+        try:
+            item_ids_list1 = set()
+            for item in kwargs['redis_data']:
+                item_ids_list1.add(item["item_id"])
+            items_for_delete = []
+            for item in kwargs['zbx_items']:
+                if item["itemid"] not in item_ids_list1:
+                    items_for_delete.append(item)
+            updated_redis_data = []
+            for item in kwargs['redis_data']:
+                item_ids_for_delete = set()
+                for i in items_for_delete:
+                    item_ids_for_delete.add(i["itemid"])
+                if item["item_id"] not in item_ids_for_delete:
+                    updated_redis_data.append(item)
+            return [True, items_for_delete,updated_redis_data]
+        except Exception as err:
+            print(err)
+            return [False,err]
 
 
-
-
-
+    def unsync_data_between_nb_and_airwave(self,**kwargs):
+        try:
+            wap_dict_from_nb = kwargs["wap_dict_from_nb"]
+            wap_list_from_nb = wap_dict_from_nb['devices_list']
+            wap_scope_host_name = wap_dict_from_nb['wap_scope_hostname']
+            devices_nb = []
+            for dev in wap_list_from_nb:
+                sn = dev['host_sn']
+                host_name = dev['host_name']
+                if sn != None and host_name != None:
+                    devices_nb.append({"nb_sn": sn, "host_name_nb": host_name})
+            airwave01_data = []
+            aw_list = []
+            ap_list = kwargs['airwave_ap_list']
+            for ap in ap_list:
+                ap_sn = ap.get("serial_number", None)
+                host_name = ap.get('name', None)
+                if ap_sn != None and host_name != None:
+                    airwave01_data.append({"ap_sn": ap_sn, "host_name": host_name})
+            for ap in airwave01_data:
+                if wap_scope_host_name in ap['host_name']:
+                    aw_list.append(ap)
+            serials_list1 = {item['nb_sn'] for item in devices_nb}
+            serials_list2 = {item['ap_sn'] for item in aw_list}
+            unique_serials = serials_list1.symmetric_difference(serials_list2)
+            unique_items = []
+            for item in devices_nb:
+                if item['nb_sn'] in unique_serials:
+                    unique_items.append(item)
+            for item in aw_list:
+                if item['ap_sn'] in unique_serials:
+                    unique_items.append(item)
+            unique_hosts1 = {}
+            for item in unique_items:
+                host_name = item.get('host_name') or item.get('host_name_nb')
+                if 'ap_sn' in item:
+                    unique_hosts1[host_name] = {'ap_sn': item['ap_sn'], 'host_name': host_name}
+                elif host_name not in unique_hosts1:
+                    unique_hosts1[host_name] = {'ap_sn': item['nb_sn'], 'host_name': host_name}
+            filtered_items = list(unique_hosts1.values())
+            if filtered_items != [] and filtered_items != None:
+                return [True,filtered_items]
+            elif filtered_items == []:
+                return [False, "not find unsync data"]
+        except Exception as err:
+            return [False,err]
