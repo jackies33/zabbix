@@ -196,8 +196,33 @@ class ZBX_PROC():
                                 self.create_trigger_status(**kwargs)
                             return [True, item_id]
                         elif serial_number == kwargs['host_sn_for_check']:
-                            print("SN is ok")
-                            return [True,item_id]
+                            tags_new = kwargs['tags']
+                            floor_new, location_new, name_of_ap_new = None, None, None
+                            for tag_new in tags_new:
+                                if tag_new['tag'] == "floor":
+                                    floor_new = tag_new['value']
+                                elif tag_new['tag'] == "location":
+                                    location_new = tag_new['value']
+                                elif tag_new['tag'] == "name_of_ap":
+                                    name_of_ap_new = tag_new['value']
+                            floor_old, location_old, name_of_ap_old = None, None, None
+                            for item in item_tags:
+                                if item['tag'] == 'floor':
+                                    floor_old = item['value']
+                                elif item['tag'] == "location":
+                                    location_old = item['value']
+                                elif item['tag'] == "name_of_ap":
+                                    name_of_ap_old = item['value']
+                            if floor_new and location_new and name_of_ap_new and floor_old and location_old and name_of_ap_old:
+                                if floor_new != floor_old or location_new != location_old or name_of_ap_new != name_of_ap_old:
+                                    self.zapi.item.delete(item_id)
+                                    time.sleep(1)
+                                    self.exec_create_item(**kwargs)
+                                    time.sleep(1)
+                                    if kwargs["create_trigger"] == True:
+                                        self.create_trigger_status(**kwargs)
+                                    return [True, item_id]
+                                return [True,item_id]
             elif kwargs["create_trigger"] == False and kwargs['check_sn'] == False:
                 return [True, item_id]
             """
