@@ -26,6 +26,12 @@ class MOB_MASTER():
             command_url = f"{MOBILITY_MASTER_BASE_URL}/v1/configuration/showcommand?json=1&command=show+global-user-table+list&UIDARUBA={uid_aruba}"
             response = self.session.get(command_url)
             ssid_users_count = {}
+            ssid_users_count_by_controller = [
+                {"ip": "10.17.0.17", "host_name": "wlc-aruba-dpmo-01", "ssid_users_count": {}},
+                {"ip": "10.17.0.18", "host_name": "wlc-aruba-dpmo-02", "ssid_users_count": {}},
+                {"ip": "10.17.0.25", "host_name": "wlc-aruba-2k-01", "ssid_users_count": {}},
+                {"ip": "10.17.0.26", "host_name": "wlc-aruba-2k-02", "ssid_users_count": {}}
+            ]
             if response.status_code == 200:
                 global_list_users = response.json()
                 if global_list_users:
@@ -36,6 +42,12 @@ class MOB_MASTER():
                             ssid_users_count[users_ssid] += 1
                         else:
                             ssid_users_count[users_ssid] = 1
+                        for save_dict in ssid_users_count_by_controller:
+                            if save_dict['ip'] == dict_user['Current switch']:
+                                if users_ssid in save_dict["ssid_users_count"]:
+                                    save_dict["ssid_users_count"][users_ssid] += 1
+                                else:
+                                    save_dict["ssid_users_count"][users_ssid] = 1
 
             else:
                 print("ERROR:", response.text)
@@ -45,7 +57,7 @@ class MOB_MASTER():
             #        keys_for_poping.append(key)
             #for key in keys_for_poping:
             #    ssid_users_count.pop(key)
-            return [True,ssid_users_count]
+            return [True,ssid_users_count,ssid_users_count_by_controller]
         except Exception as err:
             return [False,err]
 

@@ -154,9 +154,18 @@ hosts_ports_tcp = [
     ('10.50.174.37', 8057, 'tcp', 'kr01-zbx-proxy01', 'zbx_deleter_short_alarms'),
     ('10.50.164.37', 8057, 'tcp', 'sdc-zbx-proxy02', 'zbx_deleter_short_alarms'),
 
+    #OBMP services
+    ('10.50.64.190', 3000, 'tcp', 'sdc-bmp01', 'obmp-grafana'),
+    ('10.50.64.190', 3003, 'tcp', 'sdc-bmp01', 'event_manager'),
+    ('10.50.64.190', 9092, 'tcp', 'sdc-bmp01', 'obmp-kafka'),
+    #('10.50.64.190', 9005, 'tcp', 'sdc-bmp01', 'obmp-psql-app'),
+    #('10.50.64.190', 2888, 'tcp', 'sdc-bmp01', 'obmp-zookeeper'),
+    ('10.50.64.190', 5432, 'tcp', 'sdc-bmp01', 'obmp-psql'),
+
     #prometheus services
     ('10.50.174.36', 9090, 'tcp', 'kr01-zbx-grafana01', 'prometheus'),
     ('10.50.164.36', 9090, 'tcp', 'sdc-zbx-grafana02', 'prometheus'),
+
     #nodeexporter prometheus
     ('10.50.174.33', 9100, 'tcp', 'kr01-zbx-net-alb01', 'node_exporter-prometheus'),
     ('10.50.194.33', 9100, 'tcp', 'm9-zbx-etcd01', 'node_exporter-prometheus'),

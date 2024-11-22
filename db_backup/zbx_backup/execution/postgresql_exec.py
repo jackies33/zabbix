@@ -22,6 +22,25 @@ def tg_bot(message):
 
 
 
+def delete_old_backups(backup_dir):
+    try:
+        # Получаем список файлов в директории
+        files = [
+            os.path.join(backup_dir, f) for f in os.listdir(backup_dir)
+            if os.path.isfile(os.path.join(backup_dir, f))
+        ]
+        files.sort(key=os.path.getmtime, reverse=True)
+        if len(files) > 3:
+            for old_file in files[3:]:
+                try:
+                    os.remove(old_file)
+                    print(f"Deleted old backup: {old_file}")
+                except OSError as e:
+                    print(f"Error deleting file {old_file}: {e}")
+    except Exception as e:
+        print(f"Error during backup cleanup: {e}")
+
+
 def db_execution():
     try:
         list_backups_exec = []
@@ -34,21 +53,23 @@ def db_execution():
             db_user = db_inst['db_user']
             db_pass = db_inst['db_pass']
             result_dict = {"db_name": db_name}
+            backup_dir = f"/mnt/sharedfolder_client/Full/{db_name}"
             pg_dump_command = f"sudo PGPASSWORD={db_pass} pg_dump -U {db_user} -h {db_ip} -p {db_port} {db_name} > " \
-                              f"/mnt/sharedfolder_client/Full/{db_name}/pgsql_backup_from_{dt_string}.sql"
+                              f"{backup_dir}/pgsql_backup_from_{dt_string}.sql"
 
             try:
                 result = subprocess.run(pg_dump_command, shell=True, check=True)
                 print("Backup completed successfully.")
             except subprocess.CalledProcessError as e:
                 print("Error during backup:", e.stderr.decode())
-            backup_file_path = f"/mnt/sharedfolder_client/Full/{db_name}/pgsql_backup_from_{dt_string}.sql"
+            backup_file_path = f"{backup_dir}/pgsql_backup_from_{dt_string}.sql"
             if os.path.exists(backup_file_path):
                 print(f"Backup file created: {backup_file_path}")
                 result_dict.update({"result": True})
             else:
                 print("Backup file not found.")
                 result_dict.update({"result": False})
+            delete_old_backups(backup_dir)
             list_backups_exec.append(result_dict)
 
         return [True,list_backups_exec]
