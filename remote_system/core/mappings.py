@@ -56,7 +56,7 @@ class GetMappings():
         'Huawei Technologies Co./Huawei.VRP': 'Huawei VRP',
         'Juniper Networks/Juniper.JUNOS': 'Juniper',
         'MikroTik/MikroTik.RouterOS': 'Mikrotik',
-        'Hewlett Packard Enterprise/Aruba.ArubaOS': 'Linux',
+        'Hewlett Packard Enterprise/Aruba.ArubaOS': 'ArubaOS',
         'Hewlett Packard Enterprise/Aruba.ArubaOS/AP 345': 'Aruba AP',
         'T8/Atlas.OS/': "Atlas.OS",
         'Cisco Systems/Cisco.ASA': "Cisco ASAv",

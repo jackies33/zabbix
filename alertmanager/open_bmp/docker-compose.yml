@@ -1,0 +1,19 @@
+
+version: '3'
+
+
+services:
+
+  event_manager:
+    build:
+      context: .
+      dockerfile: event_manager/Dockerfile
+    container_name: event_manager
+    environment:
+      - PYTHONPATH=/app
+      - TZ=Europe/Moscow
+      - web_server_port=3003
+    ports:
+      - "3003:3003"
+    restart: always
+
