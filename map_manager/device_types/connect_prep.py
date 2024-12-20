@@ -9,7 +9,7 @@ import telnetlib
 #sys.path.append(os.path.join(current_dir, '..', '..'))
 
 
-from map_manager.my_env import  mylogin , mypass
+from map_manager.my_env import  mylogin , mypass, my_login_b4com, my_pass_b4com, my_login_tech, my_pass_tech
 
 
 
@@ -52,13 +52,46 @@ class CONNECT_PREPARE():
             sock.close()
             return scheme
 
+        def template_conn_reserve(self, **kwargs):# method for make template for connection via netmiko
+            print("<<< Start preparing.py >>>")
+            try:
+                ip_conn = kwargs['ip_conn']
+                conn_scheme = kwargs['conn_scheme']
+                type_device_for_conn = kwargs['type_device_for_conn']
+
+                if "b4com" in type_device_for_conn or "npotelecom" in type_device_for_conn:
+                    host1 = {
+
+                        "host": ip_conn,
+                        "username": my_login_tech,
+                        "password": my_pass_tech,
+                        "device_type": 'cisco_ios',
+                        "global_delay_factor": 3,
+                    }
+                    return host1
+            except Exception as err:
+                print(err)
+                return False
+
         def template_conn(self, **kwargs):# method for make template for connection via netmiko
             print("<<< Start preparing.py >>>")
             try:
                 ip_conn = kwargs['ip_conn']
                 conn_scheme = kwargs['conn_scheme']
                 type_device_for_conn = kwargs['type_device_for_conn']
-                if conn_scheme == "1" and type_device_for_conn != "hp_procurve":
+
+                if "b4com" in type_device_for_conn:
+                    host1 = {
+
+                        "host": ip_conn,
+                        "username": my_login_b4com,
+                        "password": my_pass_b4com,
+                        "device_type": 'cisco_ios',
+                        "global_delay_factor": 3,
+                    }
+                    return host1
+
+                elif conn_scheme == "1" and type_device_for_conn != "hp_procurve":
                     host1 = {
 
                         "host": ip_conn,
@@ -67,7 +100,10 @@ class CONNECT_PREPARE():
                         "device_type": type_device_for_conn,
                         "global_delay_factor": 0.5,
                     }
+                    return host1
                 elif  conn_scheme == "1" and type_device_for_conn == "hp_procurve":
+
+
                     host1 = {
 
                             "host": ip_conn,
@@ -77,6 +113,7 @@ class CONNECT_PREPARE():
                             "global_delay_factor": 3,
                             "secret": mypass,
                     }
+                    return host1
                 else:
                     host1 = {
 
@@ -87,7 +124,7 @@ class CONNECT_PREPARE():
                         "global_delay_factor": 3,
                     }
 
-                return host1
+                    return host1
             except Exception as err:
                 print(err)
                 return False

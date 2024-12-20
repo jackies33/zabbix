@@ -4,13 +4,7 @@ from pyzabbix import ZabbixAPI,ZabbixAPIException
 import pynetbox
 import atexit
 import urllib3
-import os
-import sys
 
-#sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-#sys.path.append('/app/')
-#current_dir = os.path.dirname(os.path.abspath(__file__))
-#sys.path.append(os.path.join(current_dir, '..', '..'))
 
 from map_manager.my_env import zbx_api_url, zbx_api_token
 from map_manager.my_env import netbox_url,netbox_api_token
@@ -31,16 +25,17 @@ class ZabbixAPIInstance:
         if not self.zapi:
             self.zapi = ZabbixAPI(zbx_api_url)
             self.zapi.session.verify = False
-            self.zapi.login(api_token=zbx_api_token)
+            #self.zapi.login(api_token=zbx_api_token)
+            self.zapi.auth = zbx_api_token
             #atexit.register(self.logout)
         return self.zapi
 
-    def logout(self):
-        if self.zapi:
-            try:
-                self.zapi.user.logout()
-            except ZabbixAPIException as e:
-                print(f"Error during logout: {e}")
+    #def logout(self):
+    #    if self.zapi:
+    #        try:
+    #            self.zapi.user.logout()
+    #        except ZabbixAPIException as e:
+    #            print(f"Error during logout: {e}")
 
 zabbix_api_instance = ZabbixAPIInstance()
 

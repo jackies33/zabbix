@@ -18,6 +18,8 @@ from map_manager.device_types.ibm import IBM
 #from map_manager.device_types.hpe import HPProCurve9xxx
 #from map_manager.device_types.mikrotik import MIKROTIK_CONN
 from map_manager.device_types.qtech import QTECH_CONN
+from map_manager.device_types.b4com import B4COM_CONN
+from map_manager.device_types.npotelecom import NPOTELECOM_CONN
 
 
 class MAPPINGS():
@@ -35,7 +37,8 @@ class MAPPINGS():
             'ce-asw':'156','ce-dsw':'156','ce-firewall':'30','core':'131','cpe':'131','cpe-firewall':'30','dpi':'30',
             'dwdm':'156','edge':'131','firewall':'30','fswitch':'156','leaf':'156','m-dsw':'156','mgmt-asw':'156',
             'mgmt-dsw':'156','ntp':'151','p':'131','pe':'131','p-pe':'131','spine':'156','tfs':'156','tor':'156',
-            'vm':'151','vpn':'15','vrr':'151','wlc-cpe':'131','fo-switch':'156'
+            'vm':'151','vpn':'15','vrr':'151','wlc-cpe':'131','fo-switch':'156','bleaf':'156','sspine':'156','stleaf':'156',
+            'stspine':'156','stsspine':'156'
         }
 
     def get_icon(self, device_role):
@@ -64,7 +67,9 @@ class MAPPINGS():
            # "HP.ProCurve9xxx": (HPProCurve9xxx, "conn_ProCurve9xxx"),
            # "MikroTik.RouterOS": (MIKROTIK_CONN, "conn_RouterOS"),
            # "Cisco.ASA": (CISCO_CONN, "conn_Cisco_ASA"),
-           "Qtech.QSW": (QTECH_CONN, "conn_qtech")
+           "Qtech.QSW": (QTECH_CONN, "conn_qtech"),
+           "B4TECH": (B4COM_CONN, "conn_B4COM_main"),
+           "NPOLIN": (NPOTELECOM_CONN, "conn_NPO_main")
             }
             platform_name =  kwargs['groups'][0]['name']
             matching_key = None

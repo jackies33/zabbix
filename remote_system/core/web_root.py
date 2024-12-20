@@ -4,7 +4,7 @@
 
 from fastapi import FastAPI, HTTPException, Request
 #from handler_core import Handler_WebHook
-from my_env import zbx_web_host
+from my_env_kr01 import zbx_web_host
 
 app = FastAPI()
 

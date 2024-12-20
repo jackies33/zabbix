@@ -6,7 +6,7 @@ import sys
 
 sys.path.append('/opt/zabbix_custom/')
 
-from remote_system.core.my_env import chat_id,tg_token
+from remote_system.core.my_env_kr01 import chat_id,tg_token
 
 class tg_bot():
 

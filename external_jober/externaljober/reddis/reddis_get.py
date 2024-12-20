@@ -10,6 +10,7 @@ from externaljober.my_env import REDDIS_URL, REDDIS_PORT
 class REDDIS():
     def __init__(self):
         self.r = redis.Redis(host=REDDIS_URL, port=REDDIS_PORT)
+        self.r_set = redis.Redis(host=REDDIS_URL, port=REDDIS_PORT)
 
     def reddis_get_config(self,key):
         # Подключение к Redis

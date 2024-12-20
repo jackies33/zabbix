@@ -106,8 +106,16 @@ hosts_ports_tcp = [
 
 
     #netbox services
-    ('10.50.74.98', 80, 'tcp', 'netbox-dev', 'netbox-web'),
-    ('10.50.74.98', 443, 'tcp', 'netbox-dev', 'netbox-web'),
+    ('10.50.174.10', 8003, 'tcp', 'kr01-net-netbox01', 'netbox'),
+    ('10.50.174.10', 5432, 'tcp', 'kr01-net-netbox01', 'nb_pgsql'),
+    ('10.50.164.10', 8003, 'tcp', 'sdc01-net-netbox02', 'netbox'),
+    ('10.50.164.10', 5432, 'tcp', 'sdc01-net-netbox02', 'nb_pgsql'),
+
+
+    #redis services
+    ('10.50.174.45', 6379, 'tcp', 'kr01-net-sys-redis01', 'redis-stack-server'),
+    ('10.50.164.45', 6379, 'tcp', 'sdc-net-sys-redis02', 'redis-stack-server'),
+
 
     #noc services
     ('10.50.74.171', 8123, 'tcp', 'kr01-main-noc', 'clickhouse'),
@@ -211,6 +219,10 @@ hosts_ports_tcp = [
     ('10.50.174.8', 9100, 'tcp', 'kr01-net-aaa-logs01', 'node_exporter-prometheus'),
     ('10.50.174.9', 9100, 'tcp', 'kr01-net-aaa-mon01', 'node_exporter-prometheus'),
     ('10.50.194.1', 9100, 'tcp', 'm9-net-aaa-etcd011 ', 'node_exporter-prometheus'),
+    ('10.50.164.10', 9100, 'tcp', 'kr01-net-netbox01', 'node_exporter-prometheus'),
+    ('10.50.164.10', 9100, 'tcp', 'sdc-net-netbox02', 'node_exporter-prometheus'),
+    ('10.50.174.45', 9100, 'tcp', 'kr01-net-sys-redis01', 'node_exporter-prometheus'),
+    ('10.50.164.45', 9100, 'tcp', 'sdc-net-sys-redis02', 'node_exporter-prometheus'),
 
 
 ]

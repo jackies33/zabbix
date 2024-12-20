@@ -1,6 +1,6 @@
 
 
-from my_env import my_path_sys
+from my_env_kr01 import my_path_sys
 import sys
 import threading
 import datetime

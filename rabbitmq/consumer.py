@@ -2,13 +2,12 @@
 
 
 import pika
-import time
 import json
 import sys
 import logging
 
 
-from my_env import rabbitmq_host, rabbitmq_queue, rbq_producer_pass, rbq_producer_login, my_path_sys
+from my_env import rabbitmq_host, rbq_producer_pass, rbq_producer_login, my_path_sys
 sys.path.append(my_path_sys)
 
 from remote_system.core.handler_core import Handler_WebHook

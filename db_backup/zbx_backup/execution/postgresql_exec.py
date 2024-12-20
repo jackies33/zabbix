@@ -53,7 +53,17 @@ def db_execution():
             db_user = db_inst['db_user']
             db_pass = db_inst['db_pass']
             result_dict = {"db_name": db_name}
+            # Проверка и создание директории для бэкапа
             backup_dir = f"/mnt/sharedfolder_client/Full/{db_name}"
+            if not os.path.exists(backup_dir):
+                try:
+                    os.makedirs(backup_dir)
+                    print(f"Created backup directory: {backup_dir}")
+                except OSError as e:
+                    print(f"Error creating directory {backup_dir}: {e}")
+                    result_dict.update({"result": False})
+                    list_backups_exec.append(result_dict)
+                    continue
             pg_dump_command = f"sudo PGPASSWORD={db_pass} pg_dump -U {db_user} -h {db_ip} -p {db_port} {db_name} > " \
                               f"{backup_dir}/pgsql_backup_from_{dt_string}.sql"
 
@@ -82,6 +92,10 @@ def execution_core():
     db_executing_result = db_execution()
     if db_executing_result[0] == False:
         print(db_executing_result[1])
+        tg_massage = f"The backup for zabbix and grafana DB's was FAILED!"
+        if tg_massage:
+            tg_sending = tg_bot(tg_massage)
+            print(tg_sending)
     elif db_executing_result[0] == True:
         for db in db_executing_result[1]:
             db_name = db['db_name']
