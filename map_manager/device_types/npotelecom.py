@@ -2,34 +2,31 @@
 
 
 
-from netmiko import ConnectHandler , NetMikoAuthenticationException, NetMikoTimeoutException
+from netmiko import ConnectHandler, NetmikoAuthenticationException
 import re
 
 
 from map_manager.device_types.connect_prep import CONNECT_PREPARE
 
 
-class HUAWEI_CONN():
+class NPOTELECOM_CONN():
     """
     Class for connection to different device
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         """
         Initialize the values
         """
-        self.neigh_pattern_common = re.compile(r"""
-                            (?P<local_iface>GigabitEthernet[^\s]+|XGigabitEthernet[^\s]+|25GE[^\s]+|100GE[^\s]+|10GE[^\s]+|MEth[^\s]+|XGE[^\s]+) \s+      # Локальный интерфейс
-                            (?P<remote_hostname>[^\s]+) \s+                                           # Имя соседнего устройства
-                            (?P<remote_iface>\S+[^\s]+)        # Интерфейс на соседнем устройстве
-                         
-                        """, re.VERBOSE)
-        self.neigh_pattern_excluding = re.compile(r"""
-                            (?P<local_iface>GigabitEthernet[^\s]+|XGigabitEthernet[^\s]+|25GE[^\s]+|100GE[^\s]+|10GE[^\s]+|MEth[^\s]+|XGE[^\s]+) \s+\d+\s+      # Локальный интерфейс
-                            (?P<remote_iface>\S+[^\s]+) \s+
-                            (?P<remote_hostname>[^\s]+)                                     
-                        """, re.VERBOSE)
-        self.diff_pattern_devices = ["Huawei Technologies Co./Huawei.VRP/CE6881-48S6CQ","Huawei Technologies Co./Huawei.VRP/CE8851-32CQ8DQ-P"]
+        self.pattern_lldp_npo_main = re.compile(r'''
+            Local\s+Interface\s+:\s+(?P<local_interface>\S+.*)\n    # Local Interface
+            (?:.*\n)*?                                            # Пропуск лишних строк
+            Port\s+ID\s+:\s+(?P<port_id>\S+)\n                    # Port ID
+            (?:.*\n)*?                                            # Пропуск лишних строк
+            System\s+Name\s+:\s+(?P<system_name>\S+)              # System Name
+        ''', re.VERBOSE | re.MULTILINE)
+
+
         self.scale_ids_with_names_for_ibm = [{"snmp_id": 129, "port_name": "INTA1", "port_id": 1},
                                              {"snmp_id": 130, "port_name": "INTA2", "port_id": 2},
                                              {"snmp_id": 131, "port_name": "INTA3", "port_id": 3},
@@ -68,7 +65,7 @@ class HUAWEI_CONN():
                                              {"snmp_id": 193, "port_name": "EXTM", "port_id": 65},
                                              {"snmp_id": 194, "port_name": "MGT1", "port_id": 66}]
 
-    def remote_iface_correcting(self, iface):
+    def iface_correcting(self, iface):
         if re.match(r"Gi\d+", iface):
             iface = iface.replace("Gi", "GigabitEthernet")
         elif re.match(r"Te\d+", iface):
@@ -79,63 +76,74 @@ class HUAWEI_CONN():
             iface = iface.replace("Eth", "Ethernet")
         elif re.match(r"XGE\d+", iface):
             iface = iface.replace("XGE", "XGigabitEthernet")
-        return iface
-    def local_iface_correcting(self, iface):
-        if re.match(r"XGE\d+", iface):
-            iface = iface.replace("XGE", "XGigabitEthernet")
+        elif "(" in iface or ")" in iface:
+            iface = re.sub(r'\s*\(.*?\)', '', iface)
+
         return iface
 
-    def conn_Huawei(self, **kwargs):
-        print("<<< Start huawei.py >>>")
+    def conn_NPO_main(self, **kwargs):
+        print("<<< Start npotelecom.py >>>")
         host_name = kwargs['name']
         try:
+            my_lldp = []
             ip_conn = kwargs['interfaces'][0]['ip']
-            type_device_for_conn = 'huawei'
-            dict_for_template = {'ip_conn': ip_conn, 'type_device_for_conn': type_device_for_conn, 'conn_scheme': '2'}
+            host_name = kwargs['name']
+            #group = kwargs['groups'][0]['name']
+            type_device_for_conn = "npotelecom"
+            dict_for_template = {'ip_conn': ip_conn, 'type_device_for_conn': type_device_for_conn,
+                                 'conn_scheme': '2'}
             template = CONNECT_PREPARE()
-            host1 = template.template_conn(**dict_for_template)
-            print("<<< Start huawei.py >>>")
-            try:
-                with ConnectHandler(**host1) as net_connect:
-                    output_lldp_main_result = net_connect.send_command('display lldp neighbor brief', delay_factor=0.5)
-                    group = kwargs['groups'][0]['name']
-                    for group_name_diff in self.diff_pattern_devices:
-                        if group_name_diff == group:
-                            matches = self.neigh_pattern_excluding.finditer(output_lldp_main_result)
-                            break
-                        else:
-                            matches = self.neigh_pattern_common.finditer(output_lldp_main_result)
-                    lldp_list = []
-                    for match in matches:
-                        data = match.groupdict()
-                        interface = data.pop('local_iface')
-                        local_iface = self.local_iface_correcting(interface)
-                        remote_sysname = data.pop('remote_hostname')
-                        if remote_sysname != None:
-                            if str(remote_sysname).endswith('.tech.mosreg.ru'):
-                                remote_sysname = remote_sysname.replace('.tech.mosreg.ru', '')
-                        remote_iface = data.pop('remote_iface')
-                        if remote_iface.isdigit() and len(remote_iface) in [1, 2]:
-                            for id in self.scale_ids_with_names_for_ibm:
-                                if str(id["port_id"]) == remote_iface:
-                                    try:
-                                        remote_iface = str(id["port_name"])
-                                    except Exception as err:
-                                        pass
-                        if remote_iface != None:
-                            remote_iface = self.remote_iface_correcting(remote_iface)
-                        lldp_list.append({local_iface: {"remote_hostname": remote_sysname, 'remote_iface': remote_iface}})
-                    lldp_dict = {"local_hostname": host_name, "lldp_list": lldp_list, "zbx_data": kwargs}
-                    net_connect.disconnect()
-                    return [True, lldp_dict]
-            except (NetMikoAuthenticationException, NetMikoTimeoutException) as err:  # exceptions
-                print('\n\n not connect to ' + ip_conn + '\n\n')
-                return [False, err, host_name]
+            host1 = template.template_conn_reserve(**dict_for_template)
         except Exception as err:
             print(err)
-            return [False, err, host_name]
+            return [False, None, host_name]
+        try:
+            with ConnectHandler(**host1) as net_connect:
+                output_main = net_connect.send_command('show lldp neighbors', delay_factor=.5)
+                matches = self.pattern_lldp_npo_main.finditer(output_main)
+                for match in matches:
+                    remote_sysname = match.group('system_name').strip()
+                    if remote_sysname != None:
+                        if "\n" in remote_sysname:
+                            remote_sysname = remote_sysname.split("\n")[1]
+                        if str(remote_sysname).endswith('.tech.mosreg.ru'):
+                            remote_sysname = remote_sysname.replace('.tech.mosreg.ru', '')
+                        if ".tech" in str(remote_sysname):
+                            remote_sysname = remote_sysname.split(".tech")[0]
+                    local_iface = match.group('local_interface')
+                    if local_iface != None:
+                        local_iface = self.iface_correcting(local_iface)
+                    remote_iface = match.group('port_id')
+                    if remote_iface != None:
+                        remote_iface = self.iface_correcting(remote_iface)
+                    if remote_iface.isdigit() and len(remote_iface) in [1, 2]:
+                        for id in self.scale_ids_with_names_for_ibm:
+                            if str(id["port_id"]) == remote_iface:
+                                try:
+                                    remote_iface = str(id["port_name"])
+                                except Exception as err:
+                                    pass
+                    if local_iface != None and remote_iface != None and remote_sysname != None:
+                        my_lldp.append({local_iface: {"remote_iface": remote_iface, "remote_hostname": remote_sysname}})
+            lldp_dict = {"local_hostname": host_name, "lldp_list": my_lldp, "zbx_data": kwargs}
+            net_connect.disconnect()
+            return [True, lldp_dict]
+
+        except Exception as err:
+            print(err)
+            return [False, None, host_name]
 
 
+
+
+
+#if __name__ == "__main__":
+#    connecting = NPOTELECOM_CONN()
+#    my_dict = {'local_hostname': 'adm2-mgmt-asw-cx1',  'interfaces': [{'ip': '100.64.0.233'}], "name":'adm2-mgmt-asw-cx1',
+#               'groups': [{'groupid': '126', 'name': 'NPO TELECOM/NPOLIN/NTS-25480'}]
+#               }
+#    result = connecting.conn_NPO_main(**my_dict)
+#    print(result)
 
 
 

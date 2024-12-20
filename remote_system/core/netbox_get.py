@@ -39,7 +39,7 @@ class NetboxGet():
                 tg_resource_group = tg_resource_group_dict["name"]
             if map_resource_group_dict != None:
                 map_resource_group = map_resource_group_dict["name"]
-            device_role = device.device_role
+            device_role = device.role
             device_type = device.device_type
             classification = CLASSIFIER(device_type, device_role, custom_filed)
             #AuProf = classification.classifier_AuthProf(device_type, device_role)
@@ -129,7 +129,7 @@ class NetboxGet():
                     name_of_establishmnet = device.custom_fields.get('Name_of_Establishment')
                     tg_resource_group = tg_resource_group_dict.get("name") if tg_resource_group_dict else None
                     map_resource_group = map_resource_group_dict.get("name") if map_resource_group_dict else None
-                    device_role = device.device_role
+                    device_role = device.role
                     device_type = device.device_type
                     manufacturer = device_type.manufacturer.name
                     classification = CLASSIFIER(device_type, device_role, custom_filed)
@@ -182,7 +182,7 @@ class NetboxGet():
                 tg_resource_group = tg_resource_group_dict["name"]
             if map_resource_group_dict != None:
                 map_resource_group = map_resource_group_dict["name"]
-            device_role = device.device_role
+            device_role = device.role
             device_type = device.device_type
             classification = CLASSIFIER(device_type, device_role, custom_filed)
             #AuProf = classification.classifier_AuthProf(device_type, device_role)
@@ -219,5 +219,7 @@ class NetboxGet():
             }
         except Exception as err:
            return [False,err]
+
+
 
 

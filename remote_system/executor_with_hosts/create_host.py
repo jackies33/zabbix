@@ -168,6 +168,8 @@ class Creator_Hosts(BaseDeviceDataGet):
                 return [False,err]
             except TypeError as err:
                 return [False, err]
+        except TypeError as err:
+            return [False, err]
 
 
 

@@ -1,14 +1,5 @@
 
 
-import os
-import sys
-
-#sys.path.append('/opt/zabbix_custom/zabbix_MAP/')
-#sys.path.append('/app/')
-#current_dir = os.path.dirname(os.path.abspath(__file__))
-#sys.path.append(os.path.join(current_dir, '..', '..'))
-
-
 import concurrent.futures
 
 from map_manager.core.keep_api_connect import zabbix_api_instance
@@ -170,10 +161,8 @@ class GetHost():
             return False
 
 
-#map_name = "MAP_Group_AZ_M9"
-#call = GetHost()
-#maps_details = call.get_devices_from_map(map_name)
-#print(maps_details)
 
 
-
+get_host = GetHost()
+get_host_by_map = get_host.get_devices_by_map_group("MAP_Group_ADM2_DATA")
+print(get_host_by_map)

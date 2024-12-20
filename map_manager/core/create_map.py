@@ -20,7 +20,7 @@ from map_manager.core.connect_devices_runner import run_in_threads
 from map_manager.core.parsing_data_maps import parse_all_devices_for_map
 
 
-def get_devices_by_map_group_with_device_role(map_group,additional_devices_roles):
+def get_devices_by_map_group_with_device_role_and_addit_hosts(map_group,additional_devices_roles,add_hosts):
     try:
         zapi = zabbix_api_instance.get_instance()
         hosts = zapi.host.get(
@@ -47,6 +47,11 @@ def get_devices_by_map_group_with_device_role(map_group,additional_devices_roles
                     if tag['tag'] == 'device_role' and tag['value'] == device_role:
                         # group = host['groups'][0]['name']
                         # match = re.search(pattern, group)[0].split("/")[1]
+                        filtered_hosts.append(host)
+        for add_host in add_hosts:
+            for host in hosts:
+                    host_name = host.get("name", None)
+                    if add_host == host_name:
                         filtered_hosts.append(host)
 
         return filtered_hosts
@@ -133,9 +138,14 @@ def create_map(hosts,map_group):
 if __name__ == "__main__":
     count_true = 0
     count_false = 0
-    map_name = "MAP_Group_AZ_DPMO"
+    map_name = "MAP_Group_ADM2_MGMT"
     additional_device_role = []
-    devices = get_devices_by_map_group_with_device_role(map_name,additional_device_role)
+    additional_hosts = ["adm-br-01"]
+    additional_hosts = []
+    devices = get_devices_by_map_group_with_device_role_and_addit_hosts(map_name,additional_device_role,additional_hosts)
+    for dev in devices:
+        print(dev['name'])
+    print(devices)
     count_devices = 0
     #print(f"\n\n\nHERE1\n\n\n")
     #for dev in devices:
@@ -143,7 +153,7 @@ if __name__ == "__main__":
     #    print(devices)
     #print(count_devices)
     #print(devices)
-    #"""
+    """
     results = run_in_threads(devices, max_threads=30)
     hosts_list = []
     hosts_not_connected_list = []
@@ -180,8 +190,8 @@ if __name__ == "__main__":
     #    print(u)
     #print(count_devices)
     #"""
-    creating_map = create_map(unique_hosts,map_name)
-    #print(creating_map)
+    creating_map = create_map(devices,map_name)
+    print(creating_map)
     #for d in devices:
         #my_count = my_count + 1
         #print(d)

@@ -1,13 +1,13 @@
 
 
 
-from my_env import my_path_sys
+
 import sys
 import re
 
-sys.path.append(my_path_sys)
+sys.path.append('/opt/zabbix_custom/')
 
-
+from remote_system.core.my_env_kr01 import my_path_sys
 from remote_system.executor_with_hosts.classifier_for_device import CLASSIFIER
 from remote_system.core.zabbix_get import GetProxy,GetGroup,GetTemplate,GetHost
 from remote_system.core.netbox_get import NetboxGet
@@ -168,7 +168,7 @@ class BaseDeviceDataGet:
         device_type = self.safe_get(self.data, 'device_type', 'model')
         manufacturer = self.safe_get(self.data, 'device_type', 'manufacturer', 'name')
         platform = self.safe_get(self.data, 'platform', 'name')
-        device_role = self.safe_get(self.data, 'device_role', 'name')
+        device_role = self.safe_get(self.data, 'role', 'name')
         ip_address = (self.safe_get(self.data, 'primary_ip4', 'address'))
         host_status = self.safe_get(self.data, 'status', 'label')
         tenant = self.safe_get(self.data, 'tenant')
@@ -258,7 +258,7 @@ class BaseDeviceDataGet:
         device_type = self.safe_get(self.data, 'device_type')
         manufacturer = self.safe_get(self.data, 'manufacturer')
         platform = self.safe_get(self.data, 'platform')
-        device_role = self.safe_get(self.data, 'device_role')
+        device_role = self.safe_get(self.data, 'role')
         ip_address = self.safe_get(self.data, 'ip_address')
         host_id_remote = self.safe_get(self.data, 'host_id_remote')
         host_status = self.safe_get(self.data, 'host_status')

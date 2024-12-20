@@ -124,8 +124,7 @@ if __name__ == "__main__":
     executor = ThreadPoolExecutor(max_workers=10)
     while i == 0:
         executor.submit(run_webserver)
-        #executor.submit(start_job)
-        #start_job()
+        executor.submit(start_job)
         i = 1
 
     while i == 1:

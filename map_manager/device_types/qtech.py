@@ -86,6 +86,9 @@ class QTECH_CONN():
                     iface = iface.replace("Fa", "FastEthernet")
                 elif re.match(r"Eth\d+", iface):
                     iface = iface.replace("Eth", "Ethernet")
+                elif re.match(r"XGE\d+", iface):
+                    iface = iface.replace("XGE", "XGigabitEthernet")
+
                 if re.match(r"\S+:\d+", iface):
                     iface = iface.split(":")[0]
                 return iface
